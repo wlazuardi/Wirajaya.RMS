@@ -1,0 +1,285 @@
+﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Unit.aspx.cs" Inherits="WirajayaRMS.Web.Pendataan.Unit" Title="Unit" %>
+<%@ MasterType VirtualPath="~/Site.Master" %>
+<%@ Register Assembly="ASTreeView" Namespace="Geekees.Common.Controls" TagPrefix="gcc" %>
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="act" %>
+<%@ Register Src="../UserControl/PopUpControl.ascx" TagName="PopUpControl" TagPrefix="uc" %>
+<%@ Register src="../UserControl/AlertControl.ascx" tagname="AlertControl" tagprefix="uc" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <script type="text/javascript" src="<%# Request.ApplicationPath.TrimEnd('/')%>/js/plugins/astreeview/astreeview_packed.js"></script>
+
+    <link rel="Stylesheet" href="<%# Request.ApplicationPath.TrimEnd('/')%>/css/astreeview/astreeview.css" />
+
+    <script type="text/javascript" src="<%# Request.ApplicationPath.TrimEnd('/')%>/js/plugins/contextmenu/contextmenu_packed.js"></script>
+
+    <link rel="Stylesheet" href="<%# Request.ApplicationPath.TrimEnd('/')%>/css/contextmenu/contextmenu.css" />
+    
+    <link rel="Stylesheet" href="<%# Request.ApplicationPath.TrimEnd('/')%>/css/asdropdowntreeview/dropdowntreeview.css" />
+    
+    <style>
+        .defaultDropdownBox
+        {
+        	border: none;
+        	width: 100%;
+        }
+        .defaultDropdownBoxContainer
+        {
+        	width: 100%;
+        }
+        .defaultDropdownTextContainer
+        {
+        	padding: 6px 12px;
+        }
+        .defaultDropdownIconTD
+        {
+        	background: #ddd;
+        }
+        .defaultDropdownTree
+        {
+        	width: 100%;
+        }
+    </style>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <uc:PopUpControl ID="popUpAddEditUnit" runat="server" HeaderText="Tambah Unit"
+        BehaviorID="popUpAddEditUnit" PopupControlID="pnlAddEditUnit" />
+        
+    <uc:PopUpControl ID="popUpConfirm" runat="server" HeaderText="Konfirmasi" 
+        BehaviorID="popUpConfirm" PopupControlID="pnlConfirm" Type="Warning"/>
+        
+    <asp:UpdatePanel ID="up1" runat="server">
+    <ContentTemplate>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-info">
+                    <div class="box-header">
+                        <h3 class="box-title">Daftar Unit</h3>       
+                        <div class="box-tools pull-right">
+                        </div>                 
+                    </div>
+                    <div class="box-body">   
+                        <div class="alert alert-info">
+                            <i class="fa fa-info"></i>Anda dapat menambahkan, mengubah, dan unit jabatan dengan mengklik kanan pada susunan unit
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2 pull-right">
+                            </div>
+                            <div class="col-sm-10">
+                                <gcc:ASTreeView ID="tvUnit" runat="server" EnableCheckbox="false" EnableNodeIcon="false"
+                                    EnableContextMenuAdd="false" EnableContextMenuEdit="false" EnableContextMenuDelete="false" OnNodeSelectedScript="nodeSelectHandler(elem);"
+                                    EnableDragDrop="false"
+                                    BasePath="~/css/astreeview/" />
+                            </div>
+                        </div>
+                        
+                        <uc:AlertControl ID="alertNotification" runat="server" Visible="false" Dismissable="true"/>
+                        
+                        <%--Hidden field untuk keperluan Add, Edit, Delete--%>
+                        <asp:HiddenField ID="hidParentKdUnit" runat="server"></asp:HiddenField>
+                        <asp:HiddenField ID="hidKdUnit" runat="server"></asp:HiddenField>
+                        <asp:HiddenField ID="hidNamaUnit" runat="server"></asp:HiddenField>
+                    </div>
+                    <div class="box-footer">
+                        <div class="row">
+                            <div class="pull-right" style="width:230px">
+                                <asp:Button ID="btnAddUnitBottom" runat="server" Text="Tambah" CssClass="btn btn-primary" disabled="disabled" OnClientClick="return AddUnit();"/>
+                                <asp:Button ID="btnEditUnitBottom" runat="server" Text="Ubah" CssClass="btn btn-primary" disabled="disabled" OnClientClick="return EditUnit();"/>
+                                <asp:Button ID="btnDeleteUnitBottom" runat="server" Text="Hapus" CssClass="btn btn-danger" disabled="disabled" OnClientClick="return DeleteUnit();"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ContentTemplate>
+    </asp:UpdatePanel>
+    
+    <%--Pop up untuk add/edit--%>
+    <asp:Panel ID="pnlAddEditUnit" runat="server">
+        <div class="modal-body">
+            <div class="form">
+                <div class="form-group">
+                    <label class="control-label">
+                        Parent</label>
+                    <asp:TextBox ID="txtParentNmUnit" runat="server" Enabled="false" CssClass="form-control"></asp:TextBox>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Nama Unit</label>
+                    <asp:TextBox ID="txtNamaUnit" runat="server" CssClass="form-control"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="reqNamaUnit" runat="server" ControlToValidate="txtNamaUnit"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditUnit"></asp:RequiredFieldValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Jabatan Maksimal</label>
+                    <asp:DropDownList ID="ddlMaxJabatan" runat="server" CssClass="form-control"></asp:DropDownList>    
+                    <asp:RequiredFieldValidator ID="reqMaxJabatan" runat="server" 
+                        InitialValue="0" 
+                        ControlToValidate="ddlMaxJabatan" 
+                        ErrorMessage="Field tidak boleh kosong"
+                        ValidationGroup="AddEditUnit">
+                    </asp:RequiredFieldValidator>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnAddUnit" runat="server" CssClass="btn btn-primary" Text="Tambah"
+                OnClick="btnAddUnit_Click" ValidationGroup="AddEditUnit" />
+            <asp:Button ID="btnEditUnit" runat="server" CssClass="btn btn-primary" Text="Simpan"
+                OnClick="btnEditUnit_Click" ValidationGroup="AddEditUnit" />
+        </div>
+    </asp:Panel>
+    
+    <%--Popup untuk konfirmasi delete--%>
+    <asp:Panel ID="pnlConfirm" runat="server">
+        <div class="modal-body">
+            <asp:Label ID="lblConfirm" runat="server"></asp:Label>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnYesConfirm" runat="server" CssClass="btn btn-warning" Text="Ya"
+                OnClick="btnYesConfirm_Click" />
+            <asp:Button ID="btnNoConfirm" runat="server" CssClass="btn btn-primary" Text="Tidak"
+                OnClick="btnNoConfirm_Click" />
+        </div>
+    </asp:Panel>
+    
+    <asp:PlaceHolder ID="PlaceHolder1" runat="server">
+        <script type="text/javascript">
+            function AddUnit() {
+                var kdUnitParent = $('#<%=hidKdUnit.ClientID%>').val();
+                var nmUnitParent = $('#<%=hidNamaUnit.ClientID%>').val();
+                
+                $('#<%=pnlAddEditUnit.ClientID%>').parent().parent().find('.modal-title').html('Tambah Unit');                
+                $find('popUpAddEditUnit').show();
+                if (kdUnitParent == 'root') {
+                    $('#<%=hidParentKdUnit.ClientID%>').val(0);
+                }
+                else {
+                    $('#<%=hidParentKdUnit.ClientID%>').val(kdUnitParent);
+                }
+                $('#<%=txtParentNmUnit.ClientID%>').val(nmUnitParent);
+                $('#<%=txtNamaUnit.ClientID%>').val('');
+                $('#<%=btnAddUnit.ClientID%>').show();
+                $('#<%=btnEditUnit.ClientID%>').hide();
+                $('#<%=ddlMaxJabatan.ClientID%>').val('0');
+
+                return false;
+            }
+
+            function EditUnit() {
+                var kdUnit = $('#<%=hidKdUnit.ClientID%>').val();
+
+                if (kdUnit == 'root') {
+                    alert('Node ini tidak bisa diubah');
+                    return false;
+                }
+                
+                $('#<%=pnlAddEditUnit.ClientID%>').parent().parent().find('.modal-title').html('Ubah Unit');
+                $.ajax({
+                    url: 'Unit.aspx/GetUnitData',
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({
+                        kdDivisi: 1,
+                        kdUnit: kdUnit
+                    }),
+                    success: function(data) {
+                        var result = data.d;
+                        $('#<%=hidParentKdUnit.ClientID%>').val(result.ParentKdUnit);
+                        $('#<%=hidKdUnit.ClientID%>').val(result.KdUnit);
+                        $('#<%=txtNamaUnit.ClientID%>').val(result.NmUnit);
+                        $('#<%=ddlMaxJabatan.ClientID%>').val(result.MaxKdJabatan);
+                        if (result.ParentNmUnit) {
+                            $('#<%=txtParentNmUnit.ClientID%>').val(result.ParentNmUnit);
+                        }
+                        else {
+                            $('#<%=txtParentNmUnit.ClientID%>').val('Root');
+                        }
+                        $find('popUpAddEditUnit').show();
+                        $('#<%=btnAddUnit.ClientID%>').hide();
+                        $('#<%=btnEditUnit.ClientID%>').show();
+                    }
+                });
+
+                return false;
+            }
+
+            function DeleteUnit() {
+                var kdUnit = $('#<%=hidKdUnit.ClientID%>').val();
+                var nmUnit = $('#<%=hidNamaUnit.ClientID%>').val();
+
+                if (kdUnit == 'root') {
+                    alert('Node ini tidak bisa diubah');
+                    return false;
+                }
+                
+                $find('popUpConfirm').show();
+                $('#<%=hidKdUnit.ClientID%>').val(kdUnit);
+                $('#<%=lblConfirm.ClientID%>').html('Anda yakin ingin menghapus unit <b>"' + nmUnit + '"</b>?<br/>Unit akan dihapus beserta seluruh sub-unit yang ada di bawahnya');
+                return false;
+            }
+        
+            function onAddContextMenu(clientID) {
+                var kdUnitParent = clientID.getSelectedItem().parentNode.getAttribute('treeNodeValue');
+                var nmUnitParent = $(clientID.getSelectedItem()).text();
+
+                $('#<%=hidNamaUnit.ClientID%>').val(nmUnitParent);
+                $('#<%=hidKdUnit.ClientID%>').val(kdUnitParent);
+                
+                return AddUnit();
+            }
+
+            function onEditContextMenu(clientID) {
+                var kdJabatan = clientID.getSelectedItem().parentNode.getAttribute('treeNodeValue');
+                if (kdJabatan == 'root') {
+                    alert('Node ini tidak bisa diubah');
+                    return false;
+                }
+                
+                $('#<%=hidKdUnit.ClientID%>').val(kdJabatan);
+                return EditUnit();
+            }
+
+            function onDeleteContextMenu(clientID) {
+                var kdUnit = clientID.getSelectedItem().parentNode.getAttribute('treeNodeValue');
+                var nmUnit = $(clientID.getSelectedItem()).text();
+                
+                if (kdUnit == 'root') {
+                alert('Node ini tidak bisa dihapus');
+                return false;
+                }
+
+                $('#<%=hidNamaUnit.ClientID%>').val(nmUnit);
+                $('#<%=hidKdUnit.ClientID%>').val(kdUnit);
+                    
+                return DeleteUnit();
+            }
+
+            function nodeSelectHandler(elem) {
+                var kdUnit = elem.parentNode.getAttribute("treeNodeValue"); 
+                var nmUnit = $(elem).text();
+                $('#<%=hidNamaUnit.ClientID%>').val(nmUnit);
+                $('#<%=hidKdUnit.ClientID%>').val(kdUnit);
+                $('#<%=btnAddUnitBottom.ClientID%>').removeAttr('disabled');
+                $('#<%=btnEditUnitBottom.ClientID%>').removeAttr('disabled');
+                $('#<%=btnDeleteUnitBottom.ClientID%>').removeAttr('disabled');
+            }
+            
+            function pageLoad() {
+                $('.defaultDropdownIcon').each(function(index, item) {
+                    $(item).attr('src', '../css/asdropdowntreeview/images/windropdown.gif');
+                });
+
+                $('.defaultDropdownTextContainer').each(function(index, item) {
+                    $(item).addClass('form-control');
+                    $(item).css('width', '100%');
+                });
+            }
+            
+            pageLoad();
+            Sys.Application.add_load(pageLoad);
+        </script>
+
+    </asp:PlaceHolder>
+</asp:Content>

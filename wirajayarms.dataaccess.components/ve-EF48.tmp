@@ -1,0 +1,423 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using WirajayaRMS.Business.Entities;
+using System.Data.SqlClient;
+using System.Data;
+using Microsoft.ApplicationBlocks.Data;
+using WirajayaRMS.CrossCutting.OptManagement;
+
+namespace WirajayaRMS.DataAccess.Components
+{
+    public class RecruitmentDB
+    {
+        public List<RecruitmentData> GetRecruitmentList(int kdDivisi)
+        {
+            try
+            {
+                string _spName = "spr_RMS_GetRecruitmentList";
+                List<RecruitmentData> _listRecruitment = new List<RecruitmentData>();
+                RecruitmentData _itemRecruitment = new RecruitmentData();
+
+                SqlParameter _sqlParameter = new SqlParameter("@KdDivisi", SqlDbType.Int);
+                _sqlParameter.Direction = ParameterDirection.Input;
+                _sqlParameter.Value = kdDivisi;
+
+                using (SqlDataReader _reader = SqlHelper.ExecuteReader(SystemConfiguration.RMSConnectionString, CommandType.StoredProcedure, _spName, _sqlParameter))
+                {
+                    if (_reader.HasRows)
+                    {
+                        while (_reader.Read())
+                        {
+                            _itemRecruitment = new RecruitmentData();
+                            _itemRecruitment.KdDivisi = Convert.ToInt32(_reader["KdDivisi"]);
+                            _itemRecruitment.NoRequest = _reader["NoRequest"].ToString();
+                            _itemRecruitment.TglRequest = Convert.ToDateTime(_reader["TglRequest"]);
+                            _itemRecruitment.StrukturOrganisasi = new StrukturOrganisasiData();
+                            _itemRecruitment.StrukturOrganisasi.KdSO = _reader["KdSO"].ToString();
+                            _itemRecruitment.StrukturOrganisasi.NmStrukturOrganisasi = _reader["NmSO"].ToString();
+                            _itemRecruitment.Jabatan = new JabatanData();
+                            _itemRecruitment.Jabatan.KdJabatan = _reader["KdJabatan"].ToString();
+                            _itemRecruitment.Jabatan.NmJabatan = _reader["NmJabatan"].ToString();
+                            _itemRecruitment.JmlOrang = Convert.ToInt32(_reader["JmlOrang"]);
+                            _itemRecruitment.KdAlasan = Convert.ToInt32(_reader["KdAlasan"]);
+                            _itemRecruitment.CurrLevelApproval = Convert.ToInt32(_reader["CurrLevelApproval"]);
+                            _itemRecruitment.Creator = Convert.ToInt32(_reader["Creator"]);
+                            _listRecruitment.Add(_itemRecruitment);
+                        }
+                    }
+                }
+
+                return _listRecruitment;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public string AddNewRequestHeader(RecruitmentData recruitmentData)
+        {
+            try
+            {
+                string _spName = "spr_RMS_InsertRecruitment";
+                List<UserAccessData> _listUserAccess = new List<UserAccessData>();
+                UserAccessData _itemUserAccess = new UserAccessData();
+
+                SqlParameter[] _sqlParameter = new SqlParameter[8];
+                _sqlParameter[0] = new SqlParameter("@KdDivisi", SqlDbType.Int);
+                _sqlParameter[0].Direction = ParameterDirection.Input;
+                _sqlParameter[0].Value = recruitmentData.KdDivisi;
+
+                _sqlParameter[1] = new SqlParameter("@KdSO", SqlDbType.VarChar, 10);
+                _sqlParameter[1].Direction = ParameterDirection.Input;
+                _sqlParameter[1].Value = recruitmentData.StrukturOrganisasi.KdSO;
+
+                _sqlParameter[2] = new SqlParameter("@KdJabatan", SqlDbType.VarChar, 10);
+                _sqlParameter[2].Direction = ParameterDirection.Input;
+                _sqlParameter[2].Value = recruitmentData.Jabatan.KdJabatan;
+
+                _sqlParameter[3] = new SqlParameter("@TglRequest", SqlDbType.DateTime);
+                _sqlParameter[3].Direction = ParameterDirection.Input;
+                _sqlParameter[3].Value = recruitmentData.TglRequest;
+
+                _sqlParameter[4] = new SqlParameter("@JmlOrang", SqlDbType.Int);
+                _sqlParameter[4].Direction = ParameterDirection.Input;
+                _sqlParameter[4].Value = recruitmentData.JmlOrang;
+
+                _sqlParameter[5] = new SqlParameter("@KdAlasan", SqlDbType.Int);
+                _sqlParameter[5].Direction = ParameterDirection.Input;
+                _sqlParameter[5].Value = recruitmentData.KdAlasan;
+
+                _sqlParameter[6] = new SqlParameter("@CurrLevelApproval", SqlDbType.Int);
+                _sqlParameter[6].Direction = ParameterDirection.Input;
+                _sqlParameter[6].Value = recruitmentData.CurrLevelApproval;
+
+                _sqlParameter[7] = new SqlParameter("@Creator", SqlDbType.Int);
+                _sqlParameter[7].Direction = ParameterDirection.Input;
+                _sqlParameter[7].Value = recruitmentData.Creator;
+
+                return SqlHelper.ExecuteScalar(SystemConfiguration.RMSConnectionString, CommandType.StoredProcedure, _spName, _sqlParameter).ToString();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public int AddRecruitmentJobDesc(string noRequest, string jobDesc)
+        {
+            try
+            {
+                string _spName = "spr_RMS_InsertRecruitmentJobDesc";
+
+                SqlParameter[] _sqlParameter = new SqlParameter[2];
+                _sqlParameter[0] = new SqlParameter("@NoRequest", SqlDbType.VarChar, 15);
+                _sqlParameter[0].Direction = ParameterDirection.Input;
+                _sqlParameter[0].Value = noRequest;
+
+                _sqlParameter[1] = new SqlParameter("@JobDesc", SqlDbType.VarChar, 250);
+                _sqlParameter[1].Direction = ParameterDirection.Input;
+                _sqlParameter[1].Value = jobDesc;
+
+                return SqlHelper.ExecuteNonQuery(SystemConfiguration.RMSConnectionString, CommandType.StoredProcedure, _spName, _sqlParameter);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public int AddRecruitmentQualification(string noRequest, string qualification)
+        {
+            try
+            {
+                string _spName = "spr_RMS_InsertRecruitmentQualification";
+
+                SqlParameter[] _sqlParameter = new SqlParameter[2];
+                _sqlParameter[0] = new SqlParameter("@NoRequest", SqlDbType.VarChar, 15);
+                _sqlParameter[0].Direction = ParameterDirection.Input;
+                _sqlParameter[0].Value = noRequest;
+
+                _sqlParameter[1] = new SqlParameter("@Qualification", SqlDbType.VarChar, 250);
+                _sqlParameter[1].Direction = ParameterDirection.Input;
+                _sqlParameter[1].Value = qualification;
+
+                return SqlHelper.ExecuteNonQuery(SystemConfiguration.RMSConnectionString, CommandType.StoredProcedure, _spName, _sqlParameter);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public RecruitmentData GetRecruitmentData(string noRequest)
+        {
+            try
+            {
+                string _spName = "spr_RMS_GetRecruitmentData";
+                RecruitmentData _itemRecruitment = new RecruitmentData();
+
+                SqlParameter _sqlParameter = new SqlParameter("@NoRequest", SqlDbType.VarChar, 15);
+                _sqlParameter.Direction = ParameterDirection.Input;
+                _sqlParameter.Value = noRequest;
+
+                using (SqlDataReader _reader = SqlHelper.ExecuteReader(SystemConfiguration.RMSConnectionString, CommandType.StoredProcedure, _spName, _sqlParameter))
+                {
+                    if (_reader.HasRows)
+                    {
+                        if (_reader.Read())
+                        {
+                            _itemRecruitment = new RecruitmentData();
+                            _itemRecruitment.KdDivisi = Convert.ToInt32(_reader["KdDivisi"]);
+                            _itemRecruitment.NoRequest = _reader["NoRequest"].ToString();
+                            _itemRecruitment.TglRequest = Convert.ToDateTime(_reader["TglRequest"]);
+                            _itemRecruitment.StrukturOrganisasi = new StrukturOrganisasiData();
+                            _itemRecruitment.StrukturOrganisasi.KdSO = _reader["KdSO"].ToString();
+                            _itemRecruitment.StrukturOrganisasi.NmStrukturOrganisasi = _reader["NmSO"].ToString();
+                            _itemRecruitment.Jabatan = new JabatanData();
+                            _itemRecruitment.Jabatan.KdJabatan = _reader["KdJabatan"].ToString();
+                            _itemRecruitment.Jabatan.NmJabatan = _reader["NmJabatan"].ToString();
+                            _itemRecruitment.JmlOrang = Convert.ToInt32(_reader["JmlOrang"]);
+                            _itemRecruitment.KdAlasan = Convert.ToInt32(_reader["KdAlasan"]);
+                            _itemRecruitment.CurrLevelApproval = Convert.ToInt32(_reader["CurrLevelApproval"]);
+                            _itemRecruitment.Creator = Convert.ToInt32(_reader["Creator"]);
+                        }
+                    }
+                }
+
+                return _itemRecruitment;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public List<JobDescData> GetRecruitmentJobDescList(string noRequest)
+        {
+            try
+            {
+                string _spName = "spr_RMS_GetRecruitmentJobDescList";
+                List<JobDescData> _listJobDesc = new List<JobDescData>();
+                JobDescData _itemJobDesc = new JobDescData();
+
+                SqlParameter _sqlParameter = new SqlParameter("@NoRequest", SqlDbType.VarChar, 15);
+                _sqlParameter.Direction = ParameterDirection.Input;
+                _sqlParameter.Value = noRequest;
+
+                using (SqlDataReader _reader = SqlHelper.ExecuteReader(SystemConfiguration.RMSConnectionString, CommandType.StoredProcedure, _spName, _sqlParameter))
+                {
+                    if (_reader.HasRows)
+                    {
+                        while (_reader.Read())
+                        {
+                            _itemJobDesc = new JobDescData();
+                            _itemJobDesc.NoRequest = _reader["NoRequest"].ToString();
+                            _itemJobDesc.JobDesc = _reader["JobDesc"].ToString();
+                            _listJobDesc.Add(_itemJobDesc);
+                        }
+                    }
+                }
+
+                return _listJobDesc;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public List<QualificationData> GetRecruitmentQualificationList(string noRequest)
+        {
+            try
+            {
+                string _spName = "spr_RMS_GetRecruitmentQualificationList";
+                List<QualificationData> _listQualification = new List<QualificationData>();
+                QualificationData _itemQualification = new QualificationData();
+
+                SqlParameter _sqlParameter = new SqlParameter("@NoRequest", SqlDbType.VarChar, 15);
+                _sqlParameter.Direction = ParameterDirection.Input;
+                _sqlParameter.Value = noRequest;
+
+                using (SqlDataReader _reader = SqlHelper.ExecuteReader(SystemConfiguration.RMSConnectionString, CommandType.StoredProcedure, _spName, _sqlParameter))
+                {
+                    if (_reader.HasRows)
+                    {
+                        while (_reader.Read())
+                        {
+                            _itemQualification = new QualificationData();
+                            _itemQualification.NoRequest = _reader["NoRequest"].ToString();
+                            _itemQualification.Qualification = _reader["Qualification"].ToString();
+                            _listQualification.Add(_itemQualification);
+                        }
+                    }
+                }
+
+                return _listQualification;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public int DeleteRecruitment(string noRequest)
+        {
+            try
+            {
+                string _spName = "spr_RMS_DeleteRecruitment";
+
+                SqlParameter _sqlParameter = new SqlParameter("@NoRequest", SqlDbType.VarChar, 15);
+                _sqlParameter.Direction = ParameterDirection.Input;
+                _sqlParameter.Value = noRequest;
+
+                return SqlHelper.ExecuteNonQuery(SystemConfiguration.RMSConnectionString, CommandType.StoredProcedure, _spName, _sqlParameter);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public int UpdateRequest(RecruitmentData recruitmentData)
+        {
+            using (SqlConnection conn = new SqlConnection(SystemConfiguration.RMSConnectionString))
+            {
+                conn.Open();
+
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        string noRequest = new RecruitmentDB().UpdateRequestHeader(recruitmentData, conn, trans);
+
+                        int jobDescDelete = new RecruitmentDB().DeleteAllJobDesc(recruitmentData.NoRequest, conn, trans);
+
+                        int qualificationDelete = new RecruitmentDB().DeleteAllQualification(recruitmentData.NoRequest, conn, trans);
+
+                        //foreach (JobDescData jobDesc in recruitmentData.JobDescList)
+                        //{
+                        //    int result = new RecruitmentDB().AddRecruitmentJobDesc(recruitmentData.NoRequest, jobDesc.JobDesc);
+                        //}
+
+                        //foreach (QualificationData qualification in recruitmentData.QualificationList)
+                        //{
+                        //    int result = new RecruitmentDB().AddRecruitmentQualification(recruitmentData.NoRequest, qualification.Qualification);
+                        //}
+
+                        trans.Commit();
+                        return 1;
+
+                    }
+                    catch (Exception ex)
+                    {
+                        trans.Rollback();
+                        return 0;
+                    }
+                }
+            }
+
+        }
+
+        public string UpdateRequestHeader(RecruitmentData recruitmentData, SqlConnection conn, SqlTransaction trans)
+        {
+            try
+            {
+                string _spName = "spr_RMS_InsertRecruitment";
+                List<UserAccessData> _listUserAccess = new List<UserAccessData>();
+                UserAccessData _itemUserAccess = new UserAccessData();
+
+                SqlParameter[] _sqlParameter = new SqlParameter[8];
+                _sqlParameter[0] = new SqlParameter("@KdDivisi", SqlDbType.Int);
+                _sqlParameter[0].Direction = ParameterDirection.Input;
+                _sqlParameter[0].Value = recruitmentData.KdDivisi;
+
+                _sqlParameter[1] = new SqlParameter("@KdSO", SqlDbType.VarChar, 10);
+                _sqlParameter[1].Direction = ParameterDirection.Input;
+                _sqlParameter[1].Value = recruitmentData.StrukturOrganisasi.KdSO;
+
+                _sqlParameter[2] = new SqlParameter("@KdJabatan", SqlDbType.VarChar, 10);
+                _sqlParameter[2].Direction = ParameterDirection.Input;
+                _sqlParameter[2].Value = recruitmentData.Jabatan.KdJabatan;
+
+                _sqlParameter[3] = new SqlParameter("@TglRequest", SqlDbType.DateTime);
+                _sqlParameter[3].Direction = ParameterDirection.Input;
+                _sqlParameter[3].Value = recruitmentData.TglRequest;
+
+                _sqlParameter[4] = new SqlParameter("@JmlOrang", SqlDbType.Int);
+                _sqlParameter[4].Direction = ParameterDirection.Input;
+                _sqlParameter[4].Value = recruitmentData.JmlOrang;
+
+                _sqlParameter[5] = new SqlParameter("@KdAlasan", SqlDbType.Int);
+                _sqlParameter[5].Direction = ParameterDirection.Input;
+                _sqlParameter[5].Value = recruitmentData.KdAlasan;
+
+                _sqlParameter[6] = new SqlParameter("@CurrLevelApproval", SqlDbType.Int);
+                _sqlParameter[6].Direction = ParameterDirection.Input;
+                _sqlParameter[6].Value = recruitmentData.CurrLevelApproval;
+
+                _sqlParameter[7] = new SqlParameter("@Creator", SqlDbType.Int);
+                _sqlParameter[7].Direction = ParameterDirection.Input;
+                _sqlParameter[7].Value = recruitmentData.Creator;
+
+
+                return SqlHelper.ExecuteScalar(conn, trans, CommandType.StoredProcedure, _spName, _sqlParameter).ToString();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public int DeleteAllJobDesc(string noRequest, SqlConnection conn, SqlTransaction trans)
+        {
+            try
+            {
+                string _spName = "spr_RMS_DeleteAllRecruitmentJobDesc";
+
+                SqlParameter _sqlParameter = new SqlParameter("@NoRequest", SqlDbType.VarChar, 15);
+                _sqlParameter.Direction = ParameterDirection.Input;
+                _sqlParameter.Value = noRequest;
+
+                return SqlHelper.ExecuteNonQuery(conn, trans, CommandType.StoredProcedure, _spName, _sqlParameter);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public int DeleteAllQualification(string noRequest, SqlConnection conn, SqlTransaction trans)
+        {
+            try
+            {
+                string _spName = "spr_RMS_DeleteAllRecruitmentQualification";
+
+                SqlParameter _sqlParameter = new SqlParameter("@NoRequest", SqlDbType.VarChar, 15);
+                _sqlParameter.Direction = ParameterDirection.Input;
+                _sqlParameter.Value = noRequest;
+
+                return SqlHelper.ExecuteNonQuery(conn, trans, CommandType.StoredProcedure, _spName, _sqlParameter);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+
+    }
+}

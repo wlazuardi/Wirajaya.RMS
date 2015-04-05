@@ -1,0 +1,199 @@
+﻿using System;
+using System.Collections;
+using System.Configuration;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Xml.Linq;
+using WirajayaRMS.Business.Entities;
+using WirajayaRMS.Business.ApplicationFacade;
+using System.Collections.Generic;
+using WirajayaRMS.CrossCutting.Security;
+
+namespace WirajayaRMS.Web.Kandidat
+{
+    public partial class Kandidat : SecurePage
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            Master.PageTitle = Page.Title;
+            Master.PageSubTitle = "Halaman pendataan master kandidat";
+
+            if (!IsPostBack)
+            {
+                List<DivisiData> _listDivisi = new DivisiSystem().GetDivisiList(UserDataSession.KdUser);
+                ddlDivisi.DataSource = _listDivisi;
+                ddlDivisi.DataTextField = "KdNmDivisi";
+                ddlDivisi.DataValueField = "KdDivisi";
+                ddlDivisi.DataBind();
+                ddlDivisi.Items.Insert(0, new ListItem("-- Pilih Divisi --", "0"));
+                ddlDivisi.SelectedIndex = 0;
+
+                BuildSODropdownTree();
+                BuildJabatanDropdown();
+                BuildKandidatRepeater();
+            }
+        }
+
+        private void BuildSODropdownTree()
+        {
+            ddlStrukturOrganisasi.Items.Clear();
+
+            List<StrukturOrganisasiData> _listSO = new StrukturOrganisasiSystem().GetListStrukturOrganisasiByKdUser(Convert.ToInt32(ddlDivisi.SelectedValue), UserDataSession.KdUser);
+
+            foreach (StrukturOrganisasiData _itemSO in _listSO)
+            {
+                string _value = _itemSO.KdSO;
+                string _text = _itemSO.ParentNmStrukturOrganisasi + _itemSO.NmStrukturOrganisasi;
+
+                ddlStrukturOrganisasi.Items.Add(new ListItem(_value + ". " + _text, _value));
+
+                if (_itemSO.ChildNode.Count > 0)
+                {
+                    BuildSOChildNode(_itemSO, 1);
+                }
+            }
+
+            ddlStrukturOrganisasi.Items.Insert(0, new ListItem("-- Pilih Struktur Organisasi --", "0"));
+            ddlStrukturOrganisasi.SelectedIndex = 0;
+
+            BuildJabatanDropdown();
+        }
+
+        private void BuildSOChildNode(StrukturOrganisasiData _node, int _depth)
+        {
+            foreach (StrukturOrganisasiData _item in _node.ChildNode)
+            {
+                string _value = _item.KdSO;
+                string _text = _item.ParentNmStrukturOrganisasi + _item.NmStrukturOrganisasi;
+
+                string _space = "";
+                for (int i = 0; i < _depth; i++)
+                {
+                    _space += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                ddlStrukturOrganisasi.Items.Add(new ListItem(HttpUtility.HtmlDecode(_space) + _value + ". " + _text, _value));
+
+                if (_item.ChildNode.Count > 0)
+                {
+                    BuildSOChildNode(_item, _depth + 1);
+                }
+
+            }
+        }
+
+        private void BuildJabatanDropdown()
+        {
+            ddlJabatan.Items.Clear();
+
+            StrukturOrganisasiData _soData = new StrukturOrganisasiSystem().GetStrukturOrganisasiData(Convert.ToInt32(ddlDivisi.SelectedValue), ddlStrukturOrganisasi.SelectedValue);
+
+            if (_soData.KdUnit != null)
+            {
+                List<JabatanData> _listJabatan = new JabatanSystem().GetUnitMaxJabatanList(Convert.ToInt32(ddlDivisi.SelectedValue), _soData.KdUnit);
+                ddlJabatan.DataSource = _listJabatan;
+                ddlJabatan.DataTextField = "KdNmJabatan";
+                ddlJabatan.DataValueField = "KdJabatan";
+                ddlJabatan.DataBind();
+            }
+
+            ddlJabatan.Items.Insert(0, new ListItem("-- Pilih Jabatan --", "0"));
+            ddlJabatan.SelectedIndex = 0;
+        }
+
+
+        private void BuildKandidatRepeater()
+        {
+            int kdDivisi = Convert.ToInt32(ddlDivisi.SelectedValue);
+            string kdSO = ddlStrukturOrganisasi.SelectedValue;
+            string kdJabatan = ddlJabatan.SelectedValue;
+            List<KandidatData> _listKandidat = new KandidatSystem().GetKandidatList(kdDivisi, kdSO, kdJabatan);
+            rptKandidat.DataSource = _listKandidat;
+            rptKandidat.DataBind();
+        }
+
+        protected void ddlDivisi_SelectedIndexChanged(object sender, EventArgs e) 
+        {
+            BuildSODropdownTree();
+            BuildKandidatRepeater();
+        }
+
+        protected void ddlStrukturOrganisasi_SelectedIndexChanged(object sender, EventArgs e) 
+        {
+            BuildJabatanDropdown();
+            BuildKandidatRepeater();
+        }
+
+        protected void ddlJabatan_SelectedIndexChanged(object sender, EventArgs e) 
+        {
+            BuildKandidatRepeater();
+        }
+
+        protected void rptKandidat_ItemDataBound(object sender, RepeaterItemEventArgs e) 
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem) 
+            {
+                Label lblNo = (Label)e.Item.FindControl("lblNo");
+                Label lblNama = (Label)e.Item.FindControl("lblNama");
+                Label lblGender = (Label)e.Item.FindControl("lblGender");
+                Label lblNoIdentitas = (Label)e.Item.FindControl("lblNoIdentitas");
+                Label lblNoHandphone = (Label)e.Item.FindControl("lblNoHandphone");
+                Label lblEmail = (Label)e.Item.FindControl("lblEmail");
+                //Repeater rptCVFiles = (Repeater)e.Item.FindControl("rptCVFiles");
+                Label lblDivisi = (Label)e.Item.FindControl("lblDivisi");
+                Label lblSO = (Label)e.Item.FindControl("lblSO");
+                Label lblJabatan = (Label)e.Item.FindControl("lblJabatan");
+                LinkButton btnEdit = (LinkButton)e.Item.FindControl("btnEdit");
+                LinkButton btnDelete = (LinkButton)e.Item.FindControl("btnDelete");
+
+                KandidatData kandidatData = (KandidatData)e.Item.DataItem;
+                lblNo.Text = (e.Item.ItemIndex + 1).ToString();
+                lblNama.Text = kandidatData.NmKandidat;
+                lblGender.Text = kandidatData.Gender == 'L' ? "Laki-laki" : "Perempuan";
+                lblNoIdentitas.Text = kandidatData.NoIdentitas;
+                lblNoHandphone.Text = kandidatData.NoHandphone;
+                lblEmail.Text = kandidatData.Email;
+
+                //rptCVFiles.DataSource = kandidatData.CVFiles;
+                //rptCVFiles.DataBind();
+
+                lblDivisi.Text = kandidatData.Divisi.NmDivisi;
+                lblSO.Text = kandidatData.StrukturOrganisasi.NmStrukturOrganisasi;
+                lblJabatan.Text = kandidatData.Jabatan.NmJabatan;
+                btnEdit.CommandName = "EDIT";
+                btnEdit.CommandArgument = kandidatData.KdKandidat.ToString();
+                btnDelete.CommandName = "DELETE";
+                btnDelete.CommandArgument = kandidatData.KdKandidat.ToString();
+            }
+        }
+
+        protected void rptKandidat_ItemCommand(object sender, RepeaterCommandEventArgs e) 
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem) 
+            { 
+
+            }
+        }
+
+        /*
+        protected void rptCVFiles_ItemDataBound(object sender, RepeaterItemEventArgs e) 
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem) 
+            {
+                HyperLink linkDownloadCV = (HyperLink)e.Item.FindControl("linkDownloadCV");
+                FileData _fileData = (FileData)e.Item.DataItem;
+                linkDownloadCV.Text = _fileData.NmFileAsli;
+                string[] _parts = _fileData.NmFileAsli.Split('.');
+                string _ext = _parts[_parts.Length - 1];
+                linkDownloadCV.NavigateUrl = "~/DownloadFile.ashx?name=" + HttpUtility.UrlEncode(Rijndael.Encrypt(_fileData.NmFile)) + "#." + _ext; ;
+            }
+        }
+        */
+    }
+}

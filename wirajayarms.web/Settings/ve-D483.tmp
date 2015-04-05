@@ -1,0 +1,73 @@
+﻿using System;
+using System.Collections;
+using System.Configuration;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Xml.Linq;
+using WirajayaRMS.Business.Entities;
+using WirajayaRMS.Business.ApplicationFacade;
+using System.Collections.Generic;
+
+namespace WirajayaRMS.Web.Settings
+{
+    public partial class User : System.Web.UI.Page
+    {
+        private void BuildUserRepeater()
+        {
+            List<UserData> _listUser = new UserSystem().GetAllUserList();
+            rptUser.DataSource = _listUser;
+            rptUser.DataBind();
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            Master.PageTitle = Page.Title;
+            Master.PageSubTitle = "Halaman pendataan & setting user";
+
+            if (!IsPostBack) 
+            {
+                BuildUserRepeater();
+            }
+        }
+
+        protected void rptUser_ItemDataBound(object sender, RepeaterItemEventArgs e) 
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                Literal litUsername = (Literal)e.Item.FindControl("litUsername");
+                Literal litFullName = (Literal)e.Item.FindControl("litFullName");
+                Literal litEmail = (Literal)e.Item.FindControl("litEmail");
+                UserData _userData = (UserData)e.Item.DataItem;
+
+                litFullName.Text = _userData.FullName;
+                litUsername.Text = _userData.Username;
+                litEmail.Text = _userData.Email;
+
+                if (_userData.IsAdmin == 1) 
+                {
+                    litUsername.Text += "&nbsp;<small class=\"badge pull-right bg-yellow\"><i class=\"fa fa-star\"></i> admin</small>";
+                }
+            }
+        }
+
+        protected void btnAddUser_Click(object sender, EventArgs e) 
+        { 
+        }
+
+        protected void btnAddNewUser_Click(object sender, EventArgs e) 
+        {
+            popUpAddUser.Show();
+            txtConfPassword.Text = "";
+            txtPassword.Text = "";
+            txtEmail.Text = "";
+            txtFullName.Text = "";
+            txtUsername.Text = "";
+        }
+    }
+}

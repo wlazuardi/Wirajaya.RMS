@@ -1,0 +1,216 @@
+﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Rekrutmen.aspx.cs"
+    Inherits="WirajayaRMS.Web.Transaksi.Rekrutmen" Title="Rektrutmen" %>
+
+<%@ MasterType VirtualPath="~/Site.Master" %>
+<%@ Register Src="../UserControl/PopUpControl.ascx" TagName="PopUpControl" TagPrefix="uc" %>
+<%@ Register src="../UserControl/AlertControl.ascx" tagname="AlertControl" tagprefix="uc" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    
+    <uc:PopUpControl ID="popUpConfirm" runat="server" HeaderText="Konfirmasi" 
+        BehaviorID="popUpConfirm" PopupControlID="pnlConfirm" Type="Warning"/>
+        
+    <asp:UpdatePanel ID="up1" runat="server">
+        <ContentTemplate>
+            <div class="row">
+                <div class="col-md-12">
+                    <asp:Panel ID="pnlRequestOnHold" runat="server" CssClass="box box-info">
+                        <div class="box-header">
+                            <h3 class="box-title">
+                                Request On Hold</h3>
+                            <div class="box-tools pull-right">
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="col-sm-12 pull-right">
+                                    <asp:Repeater ID="rptRecruitment" runat="server" OnItemDataBound="rptRecruitment_ItemDataBound" OnItemCommand="rptRecruitment_ItemCommand">
+                                        <HeaderTemplate>
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>
+                                                            No
+                                                        </th>
+                                                        <th>
+                                                            No. Request
+                                                        </th>
+                                                        <th>
+                                                            Struktur Organisasi
+                                                        </th>
+                                                        <th>
+                                                            Jabatan
+                                                        </th>
+                                                        <th>
+                                                            Jumlah Orang
+                                                        </th>
+                                                        <th>
+                                                            Alasan
+                                                        </th>
+                                                        <th>
+                                                            Status
+                                                        </th>
+                                                        <th>
+                                                            Opsi
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                        </HeaderTemplate>
+                                        <ItemTemplate>
+                                            <tr>
+                                                <td>
+                                                    <asp:Literal ID="litNo" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:HyperLink ID="linkNoRequest" runat="server"></asp:HyperLink>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litStrukturOrganisasi" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litJabatan" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litJmlOrang" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litAlasan" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litStatus" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:LinkButton ID="btnEdit" ToolTip="Ubah" runat="server" Width="35" CssClass="btn btn-sm btn-primary">
+                                                        <span class="fa fa-pencil"></span>
+                                                    </asp:LinkButton>
+                                                    <asp:LinkButton ID="btnDelete" ToolTip="Hapus" runat="server" Width="35" CssClass="btn btn-sm btn-danger">
+                                                        <span class="fa fa-trash-o"></span>
+                                                    </asp:LinkButton>
+                                                </td>
+                                            </tr>
+                                        </ItemTemplate>
+                                        <FooterTemplate>
+                                            </tbody> 
+                                            </table>
+                                        </FooterTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:20px;">
+                                <uc:AlertControl ID="alertNotification" runat="server" Visible="false" Dismissable="true"/>
+                            </div>
+                            <div class="row" style="margin-top:20px;">
+                                <div class="col-sm-12">
+                                    <asp:LinkButton ID="lbAddNewRecruitment" runat="server" Text="Buat Request Baru" CssClass="btn btn-primary pull-right" PostBackUrl="~/Transaksi/AddEditRekrutmen.aspx"/>
+                                </div>
+                            </div>
+                        </div>
+                    </asp:Panel>
+                    
+                    <asp:Panel ID="pnlRequestHistoryList" runat="server" CssClass="box box-info">
+                        <div class="box-header">
+                            <h3 class="box-title">
+                                Request History</h3>
+                            <div class="box-tools pull-right">
+                                <asp:DropDownList ID="DropDownList1" runat="server" CssClass="btn btn-sm btn-default pull-right"
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlDivisi_SelectedIndexChanged">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="col-sm-12 pull-right">
+                                    <asp:Repeater ID="rptRecruitmentHistory" runat="server" OnItemDataBound="rptRecruitmentHistory_ItemDataBound">
+                                        <HeaderTemplate>
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>
+                                                            No
+                                                        </th>
+                                                        <th>
+                                                            No. Request
+                                                        </th>
+                                                        <th>
+                                                            Struktur Organisasi
+                                                        </th>
+                                                        <th>
+                                                            Jabatan
+                                                        </th>
+                                                        <th>
+                                                            Jumlah Orang
+                                                        </th>
+                                                        <th>
+                                                            Alasan
+                                                        </th>
+                                                        <th>
+                                                            Status
+                                                        </th>
+                                                        <th>
+                                                            Opsi
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                        </HeaderTemplate>
+                                        <ItemTemplate>
+                                            <tr>
+                                                <td>
+                                                    <asp:Literal ID="litNo" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:HyperLink ID="linkNoRequest" runat="server"></asp:HyperLink>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litStrukturOrganisasi" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litJabatan" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litJmlOrang" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litAlasan" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litStatus" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:LinkButton ID="btnEdit" ToolTip="Ubah" runat="server" Width="35" CssClass="btn btn-sm btn-primary">
+                                                        <span class="fa fa-pencil"></span>
+                                                    </asp:LinkButton>
+                                                </td>
+                                            </tr>
+                                        </ItemTemplate>
+                                        <FooterTemplate>
+                                            </tbody> 
+                                            </table>
+                                        </FooterTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </div>
+                        </div>
+                    </asp:Panel>
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+        
+     <%--Popup untuk konfirmasi delete--%>
+    <asp:Panel ID="pnlConfirm" runat="server">
+        <div class="modal-body">
+            <asp:HiddenField ID="hfConfirm" runat="server"/>
+            <asp:Label ID="lblConfirm" runat="server"></asp:Label>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnYesConfirm" runat="server" CssClass="btn btn-warning" Text="Ya"
+                OnClick="btnYesConfirm_Click" />
+            <asp:Button ID="btnNoConfirm" runat="server" CssClass="btn btn-primary" Text="Tidak"
+                OnClick="btnNoConfirm_Click" />
+        </div>
+    </asp:Panel>   
+    
+</asp:Content>

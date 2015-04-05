@@ -1,0 +1,267 @@
+﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="User.aspx.cs"
+    Inherits="WirajayaRMS.Web.Settings.User" Title="User Settings"%>
+
+<%@ MasterType VirtualPath="~/Site.Master" %>
+<%@ Register Src="../UserControl/AlertControl.ascx" TagName="AlertControl" TagPrefix="uc" %>
+<%@ Register Src="../UserControl/PopUpControl.ascx" TagName="PopUpControl" TagPrefix="uc" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">    
+    <uc:PopUpControl ID="popUpAddUser" runat="server" HeaderText="Tambah User"
+        BehaviorID="popUpAddUser" PopupControlID="pnlAddUser" />
+        
+    <asp:UpdatePanel ID="up1" runat="server">
+        <ContentTemplate>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-info">
+                        <div class="box-header">
+                            <h3 class="box-title">
+                                Daftar User</h3>
+                            <div class="box-tools pull-right">
+                                
+                            </div>
+                        </div>
+                        <div class="box-body form-horizontal">
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <asp:Repeater ID="rptUser" runat="server" OnItemDataBound="rptUser_ItemDataBound" OnItemCommand="rptUser_ItemCommand">
+                                        <HeaderTemplate>
+                                            <table class="table table-striped">
+                                                <tr>
+                                                    <th>No.</th>
+                                                    <th>Username</th>
+                                                    <th>Full Name</th>
+                                                    <th>E-mail</th>
+                                                    <th>Opsi</th>
+                                                </tr>
+                                        </HeaderTemplate>
+                                        <ItemTemplate>
+                                            <tr>
+                                                <td>
+                                                    <%# Container.ItemIndex + 1 %>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litUsername" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litFullName" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litEmail" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:LinkButton ID="btnEdit" ToolTip="Ubah" runat="server" Width="35" CssClass="btn btn-sm btn-primary">
+                                                        <span class="fa fa-edit"></span>
+                                                    </asp:LinkButton>
+                                                    <asp:LinkButton ID="btnDelete" ToolTip="Hapus" runat="server" Width="35" CssClass="btn btn-sm btn-danger">
+                                                        <span class="fa fa-eraser"></span>
+                                                    </asp:LinkButton>
+                                                </td>
+                                            </tr>
+                                        </ItemTemplate>
+                                        <FooterTemplate>
+                                            </table>
+                                        </FooterTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <uc:AlertControl ID="alertNotification" runat="server" Visible="false" Dismissable="true" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <asp:Button ID="btnAddNewUser" runat="server" Text="Tambah User..." OnClick="btnAddNewUser_Click" CssClass="btn btn-primary pull-right"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+        
+    <uc:PopUpControl ID="popUpEditUser" runat="server" HeaderText="Ubah User"
+        BehaviorID="popUpEditUser" PopupControlID="pnlEditUser" />
+    
+    <asp:Panel ID="pnlAddUser" runat="server">
+        <div class="modal-body">        
+            <div class="form">
+                <div class="form-group">
+                    <label class="control-label">
+                        Username</label>
+                    <asp:TextBox ID="txtUsername" runat="server" CssClass="form-control" Placeholder="Tanpa spasi, minimal 6 karakter, misal: johndoe"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="reqUsername" runat="server" ControlToValidate="txtUsername"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddUser"></asp:RequiredFieldValidator>
+                    <asp:RegularExpressionValidator ID="regUsername" runat="server" ControlToValidate="txtUsername" ValidationExpression="^[\w\d]{6,}$"
+                        ErrorMessage="Username minimal 6 karakter, karakter yang diizinkan: a-z, 0-9, atau _" Display="Dynamic" ValidationGroup="AddUser"></asp:RegularExpressionValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Nama Lengkap</label>
+                    <asp:TextBox ID="txtFullName" runat="server" CssClass="form-control" Placeholder="Misal: Jonathan Doe"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="reqFullName" runat="server" ControlToValidate="txtFullName"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddUser"></asp:RequiredFieldValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Password</label>
+                    <asp:TextBox ID="txtPassword" runat="server" CssClass="form-control" TextMode="Password" Placeholder="Minimal 6 karakter"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="reqPassword" runat="server" ControlToValidate="txtPassword"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddUser"></asp:RequiredFieldValidator>
+                    <asp:RegularExpressionValidator ID="regPassword" runat="server" ControlToValidate="txtPassword" ValidationExpression="^.{6,}$"
+                        ErrorMessage="Password minimal 6 karakter" Display="Dynamic" ValidationGroup="AddUser"></asp:RegularExpressionValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Confirm Password</label>
+                    <asp:TextBox ID="txtConfPassword" runat="server" CssClass="form-control" TextMode="Password" Placeholder="Minimal 6 karakter"></asp:TextBox>
+                    <asp:CompareValidator ID="cmpConfPassword" runat="server" ControlToCompare="txtPassword" ControlToValidate="txtConfPassword"
+                        ErrorMessage="Password tidak sama" Display="Dynamic" Operator="Equal" ValidationGroup="AddUser"></asp:CompareValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Email</label>
+                    <div class="input-group">
+                        <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                        <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" Placeholder="Misal: username@domain.com"></asp:TextBox>
+                    </div>
+                    <asp:RequiredFieldValidator ID="reqEmail" runat="server" ControlToValidate="txtEmail"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddUser"></asp:RequiredFieldValidator>
+                    <asp:RegularExpressionValidator ID="regEmail" runat="server" ControlToValidate="txtEmail"
+                        ErrorMessage="Format email tidak valid" Display="Dynamic" ValidationGroup="AddUser" ValidationExpression="^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"></asp:RegularExpressionValidator>
+                </div>                                  
+                <div class="form-group">
+                    <div class="checkbox" style="padding-left:20px;">
+                        <label> 
+                            <asp:CheckBox ID="chkIsAdmin" runat="server"></asp:CheckBox>
+                            Is Administrator? (Berikan hak akses admin kepada user)
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox" style="padding-left:20px;">
+                        <label> 
+                            <asp:CheckBox ID="chkShowSalary" runat="server"></asp:CheckBox>
+                            Show Salary? (Izinkan user untuk melihat gaji untuk masing-masing posisi & jabatan)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnAddUser" runat="server" CssClass="btn btn-primary" Text="Tambah"
+                OnClick="btnAddUser_Click" ValidationGroup="AddUser" />            
+        </div>
+    </asp:Panel>
+    
+    <asp:Panel ID="pnlEditUser" runat="server">
+        <div class="modal-body">
+            <ul class="nav nav-tabs" role="tablist" id="tabEditUser">
+                <li class="active"><a href="#profil" role="tab" data-toggle="tab">Profil</a></li>
+                <li><a href="#changePassword" role="tab" data-toggle="tab">Ubah Password</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="profil">
+                    <div class="form" style="margin-top:10px;">
+                        <asp:HiddenField ID="hidKdUserEdit" runat="server" />
+                        <div class="form-group">
+                            <label class="control-label">
+                                Username</label>
+                            <asp:TextBox ID="txtUsernameEdit" runat="server" CssClass="form-control" Placeholder="Tanpa spasi, minimal 6 karakter, misal: johndoe"></asp:TextBox>
+                            <asp:RequiredFieldValidator ID="reqUsernameEdit" runat="server" ControlToValidate="txtUsernameEdit"
+                                ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="EditUser"></asp:RequiredFieldValidator>
+                            <asp:RegularExpressionValidator ID="regUsernameEdit" runat="server" ControlToValidate="txtUsernameEdit" ValidationExpression="^[\w\d]{6,}$"
+                                ErrorMessage="Username minimal 6 karakter, karakter yang diizinkan: a-z, 0-9, atau _" Display="Dynamic" ValidationGroup="EditUser"></asp:RegularExpressionValidator>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">
+                                Nama Lengkap</label>
+                            <asp:TextBox ID="txtFullNameEdit" runat="server" CssClass="form-control" Placeholder="Misal: Jonathan Doe"></asp:TextBox>
+                            <asp:RequiredFieldValidator ID="reqFullNameEdit" runat="server" ControlToValidate="txtFullNameEdit"
+                                ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="EditUser"></asp:RequiredFieldValidator>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">
+                                Email</label>
+                            <div class="input-group">
+                                <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                                <asp:TextBox ID="txtEmailEdit" runat="server" CssClass="form-control" Placeholder="Misal: username@domain.com"></asp:TextBox>
+                            </div>
+                            <asp:RequiredFieldValidator ID="reqEmailEdit" runat="server" ControlToValidate="txtEmailEdit"
+                                ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="EditUser"></asp:RequiredFieldValidator>
+                            <asp:RegularExpressionValidator ID="regEmailEdit" runat="server" ControlToValidate="txtEmailEdit"
+                                ErrorMessage="Format email tidak valid" Display="Dynamic" ValidationGroup="EditUser" ValidationExpression="^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"></asp:RegularExpressionValidator>
+                        </div>                                  
+                        <div class="form-group">
+                            <div class="checkbox" style="padding-left:20px;">
+                                <label> 
+                                    <asp:CheckBox ID="chkIsAdminEdit" runat="server"></asp:CheckBox>
+                                    Is Administrator? (Berikan hak akses admin kepada user)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox" style="padding-left:20px;">
+                                <label> 
+                                    <asp:CheckBox ID="chkShowSalaryEdit" runat="server"></asp:CheckBox>
+                                    Show Salary? (Izinkan user untuk melihat gaji untuk masing-masing posisi & jabatan)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <asp:Button ID="btnSaveEdit" runat="server" CssClass="btn btn-primary pull-right" Text="Simpan"
+                                    OnClick="btnSaveEdit_Click" ValidationGroup="EditUser" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane" id="changePassword">
+                    <div class="form" style="margin-top:10px;">
+                        <div class="form-group">
+                            <label class="control-label">
+                                Password</label>
+                            <asp:TextBox ID="txtPasswordEdit" runat="server" CssClass="form-control" TextMode="Password" Placeholder="Minimal 6 karakter"></asp:TextBox>
+                            <asp:RequiredFieldValidator ID="reqPasswordEdit" runat="server" ControlToValidate="txtPasswordEdit"
+                                ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="ChangePassword"></asp:RequiredFieldValidator>
+                            <asp:RegularExpressionValidator ID="regPasswordEdit" runat="server" ControlToValidate="txtPasswordEdit" ValidationExpression="^.{6,}$"
+                                ErrorMessage="Password minimal 6 karakter" Display="Dynamic" ValidationGroup="ChangePassword"></asp:RegularExpressionValidator>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">
+                                Confirm Password</label>
+                            <asp:TextBox ID="txtConfPasswordEdit" runat="server" CssClass="form-control" TextMode="Password" Placeholder="Minimal 6 karakter"></asp:TextBox>
+                            <asp:CompareValidator ID="compConfPasswordEdit" runat="server" ControlToCompare="txtPasswordEdit" ControlToValidate="txtConfPasswordEdit"
+                                ErrorMessage="Password tidak sama" Display="Dynamic" Operator="Equal" ValidationGroup="ChangePassword"></asp:CompareValidator>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <asp:Button ID="btnChangePassword" runat="server" CssClass="btn btn-primary pull-right" Text="Ubah Password" ValidationGroup="EditUser" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">       
+        </div>
+    </asp:Panel>
+    
+    <%--Popup untuk konfirmasi delete--%>
+    <%--<asp:Panel ID="pnlConfirm" runat="server">
+        <div class="modal-body">
+            <asp:Label ID="lblConfirm" runat="server"></asp:Label>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnYesConfirm" runat="server" CssClass="btn btn-warning" Text="Ya"
+                OnClick="btnYesConfirm_Click" />
+            <asp:Button ID="btnNoConfirm" runat="server" CssClass="btn btn-primary" Text="Tidak"
+                OnClick="btnNoConfirm_Click" />
+        </div>
+    </asp:Panel>--%>
+</asp:Content>

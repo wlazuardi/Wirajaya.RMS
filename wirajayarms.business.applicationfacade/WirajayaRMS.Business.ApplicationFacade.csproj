@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1A0F78A7-B037-43A5-B0DF-B97A0FF7AEEF}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WirajayaRMS.Business.ApplicationFacade</RootNamespace>
+    <AssemblyName>WirajayaRMS.Business.ApplicationFacade</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="Microsoft.VisualStudio.TeamSystem.Data.UnitTesting, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DivisiSystem.cs" />
+    <Compile Include="FileSystem.cs" />
+    <Compile Include="InterviewSystem.cs" />
+    <Compile Include="JabatanSystem.cs" />
+    <Compile Include="JobDescSystem.cs" />
+    <Compile Include="KandidatSystem.cs" />
+    <Compile Include="LevelApprovalSystem.cs" />
+    <Compile Include="MenuSystem.cs" />
+    <Compile Include="NotificationSystem.cs" />
+    <Compile Include="PositionSystem.cs" />
+    <Compile Include="QualificationSystem.cs" />
+    <Compile Include="RecruitmentSystem.cs" />
+    <Compile Include="StrukturOrganisasiSystem.cs" />
+    <Compile Include="UnitSystem.cs" />
+    <Compile Include="UserAccessSystem.cs" />
+    <Compile Include="UserSystem.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WirajayaRMS.Business.Entities\WirajayaRMS.Business.Entities.csproj">
+      <Project>{18F47B50-D997-47E8-A448-029C4426007C}</Project>
+      <Name>WirajayaRMS.Business.Entities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WirajayaRMS.CrossCutting.OptManagement\WirajayaRMS.CrossCutting.OptManagement.csproj">
+      <Project>{47E5FB2E-BAF4-4C57-8710-46130734CB64}</Project>
+      <Name>WirajayaRMS.CrossCutting.OptManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WirajayaRMS.DataAccess.Components\WirajayaRMS.DataAccess.Components.csproj">
+      <Project>{8C5F844E-5735-499F-A917-CC18FA2081CE}</Project>
+      <Name>WirajayaRMS.DataAccess.Components</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

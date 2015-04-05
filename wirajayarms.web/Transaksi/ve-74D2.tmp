@@ -1,0 +1,899 @@
+﻿using System;
+using System.Collections;
+using System.Configuration;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using System.Xml.Linq;
+using System.Collections.Generic;
+using WirajayaRMS.Business.Entities;
+using WirajayaRMS.Business.ApplicationFacade;
+using WirajayaRMS.Web.UserControl;
+using WirajayaRMS.CrossCutting.Security;
+using System.Globalization;
+using System.Drawing;
+using WirajayaRMS.CrossCutting.OptManagement;
+using System.IO;
+
+namespace WirajayaRMS.Web.Transaksi
+{
+    public partial class AddEditRekrutmen : SecurePage
+    {
+        #region View State
+        public List<JobDescData> ListJobDesc
+        {
+            set
+            {
+                ViewState["ListJobDesc"] = value;
+            }
+            get
+            {
+                if (ViewState["ListJobDesc"] == null)
+                    return new List<JobDescData>();
+                else
+                    return (List<JobDescData>)ViewState["ListJobDesc"];
+            }
+        }
+
+        public List<QualificationData> ListQualification
+        {
+            set
+            {
+                ViewState["ListQualification"] = value;
+            }
+            get
+            {
+                if (ViewState["ListQualification"] == null)
+                    return new List<QualificationData>();
+                else
+                    return (List<QualificationData>)ViewState["ListQualification"];
+            }
+        }
+        #endregion
+
+        #region Private Method
+        private void BuildSODropdownTree()
+        {
+            divJmlKaryawan.Visible = true;
+            divMaxJmlKaryawan.Visible = true;
+
+            ddlStrukturOrganisasi.Items.Clear();
+
+            List<StrukturOrganisasiData> _listSO = new StrukturOrganisasiSystem().GetAllListStrukturOrganisasi(Convert.ToInt32(ddlDivisi.SelectedValue));
+
+            foreach (StrukturOrganisasiData _itemSO in _listSO)
+            {
+                string _value = _itemSO.KdSO;
+                string _text = _itemSO.NmStrukturOrganisasi;
+
+                ddlStrukturOrganisasi.Items.Add(new ListItem(_value + ". " + _text, _value));
+
+                if (_itemSO.ChildNode.Count > 0)
+                {
+                    BuildSOChildNode(_itemSO, 1);
+                }
+            }
+
+            ddlStrukturOrganisasi.Items.Insert(0, new ListItem("-- Pilih Struktur Organisasi --", "0"));
+            ddlStrukturOrganisasi.SelectedIndex = 0;
+
+            BuildJabatanDropdown();
+        }
+
+        private void BuildSOChildNode(StrukturOrganisasiData _node, int _depth)
+        {
+            foreach (StrukturOrganisasiData _item in _node.ChildNode)
+            {
+                string _value = _item.KdSO;
+                string _text = _item.NmStrukturOrganisasi;
+
+                string _space = "";
+                for (int i = 0; i < _depth; i++)
+                {
+                    _space += "&nbsp;&nbsp;&nbsp;";
+                }
+
+                ddlStrukturOrganisasi.Items.Add(new ListItem(HttpUtility.HtmlDecode(_space) + _value + ". " + _text, _value));
+
+                if (_item.ChildNode.Count > 0)
+                {
+                    BuildSOChildNode(_item, _depth + 1);
+                }
+
+            }
+        }
+
+        private void BuildJabatanDropdown()
+        {
+            ddlJabatan.Items.Clear();
+
+            StrukturOrganisasiData _soData = new StrukturOrganisasiSystem().GetStrukturOrganisasiData(Convert.ToInt32(ddlDivisi.SelectedValue), ddlStrukturOrganisasi.SelectedValue);
+
+            if (_soData.KdUnit != null)
+            {
+                List<JabatanData> _listJabatan = new JabatanSystem().GetUnitMaxJabatanList(Convert.ToInt32(ddlDivisi.SelectedValue), _soData.KdUnit);
+                ddlJabatan.DataSource = _listJabatan;
+                ddlJabatan.DataTextField = "KdNmJabatan";
+                ddlJabatan.DataValueField = "KdJabatan";
+                ddlJabatan.DataBind();
+            }
+
+            ddlJabatan.Items.Insert(0, new ListItem("-- Pilih Jabatan --", "0"));
+            ddlJabatan.SelectedIndex = 0;
+
+            BuildJobDescRepeater();
+            BuildQualificationRepeater();
+        }
+
+        private void BuildJobDescRepeater()
+        {
+            ListJobDesc = new JobDescSystem().GetJobDescList(Convert.ToInt32(ddlDivisi.SelectedValue), ddlStrukturOrganisasi.SelectedValue, ddlJabatan.SelectedValue);
+            foreach (JobDescData _data in ListJobDesc) 
+            {
+                _data.KdJobDesc = 0;
+            }
+            //if (_listJobDesc.Count == 0)
+            //{
+            //    lblMessage.Text = "Data job description tidak ditemukan";
+            //}
+            //else
+            //{
+            //    lblMessage.Text = "";
+            //}
+
+            rptJobDesc.DataSource = ListJobDesc;
+            rptJobDesc.DataBind();
+        }
+
+        private void BuildQualificationRepeater()
+        {
+            ListQualification = new QualificationSystem().GetQualificationList(Convert.ToInt32(ddlDivisi.SelectedValue), ddlStrukturOrganisasi.SelectedValue, ddlJabatan.SelectedValue);
+            
+            foreach(QualificationData _data in ListQualification)
+            {
+                _data.KdQualification = 0;
+            }
+
+            //if (_listQualification.Count == 0)
+            //{
+            //    lblMessage.Text = "Data job qualification tidak ditemukan";
+            //}
+            //else
+            //{
+            //    lblMessage.Text = "";
+            //}
+
+            rptQualification.DataSource = ListQualification;
+            rptQualification.DataBind();
+        }
+        #endregion
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            Master.PageTitle = Page.Title;
+            Master.PageSubTitle = "Halaman penambahan/perubahan permintaan rekrutmen";
+
+            ScriptManager.GetCurrent(this).RegisterPostBackControl(btnAddKandidat);
+            //ScriptManager.GetCurrent(this).RegisterAsyncPostBackControl(btnAddKandidat);
+            //Page.Form.Attributes.Add("enctype", "multipart/form-data");
+
+            if (!IsPostBack)
+            {
+                List<DivisiData> _listDivisi = new DivisiSystem().GetDivisiList();
+                ddlDivisi.DataSource = _listDivisi;
+                ddlDivisi.DataTextField = "NmDivisi";
+                ddlDivisi.DataValueField = "KdDivisi";
+                ddlDivisi.DataBind();
+                ddlDivisi.Items.Insert(0, new ListItem("-- Pilih Divisi --", "0"));
+                ddlDivisi.SelectedIndex = 0;
+
+                // Tentukan apakah edit atau tambah baru
+                if (Request.QueryString["e"] != null && Request.QueryString["e"] == "1" &&
+                    Request.QueryString["no"] != null && Request.QueryString["no"] != "")
+                {
+                    LoadRecruitmentRequestData();                    
+                }
+                else
+                {
+                    BuildSODropdownTree();
+                    BuildJabatanDropdown();
+                    BuildJobDescRepeater();
+                    BuildQualificationRepeater();
+
+                    divNoRequest.Visible = false;
+                    divJmlKaryawan.Visible = false;
+                    divMaxJmlKaryawan.Visible = false;
+                    divFasilitas.Visible = false;
+                }
+            }
+        }
+
+        private void LoadRecruitmentRequestData()
+        {
+            txtQualification.Text = "";
+            txtJobDesc.Text = "";
+
+            string _noRequest = Rijndael.Decrypt(HttpUtility.UrlDecode(Request.QueryString["no"]));
+            lblNoRequest.Text = _noRequest;
+
+            RecruitmentData _recData = new RecruitmentSystem().GetRecruitmentData(_noRequest);
+            ddlDivisi.SelectedValue = _recData.KdDivisi.ToString();
+            BuildSODropdownTree();
+            ddlStrukturOrganisasi.SelectedValue = _recData.StrukturOrganisasi.KdSO;
+            BuildJabatanDropdown();
+            ddlJabatan.SelectedValue = _recData.Jabatan.KdJabatan;
+
+            txtJmlKebutuhanKaryawan.Text = _recData.JmlOrang.ToString();
+            txtTglButuh.Text = _recData.TglButuh.ToString("dd/MM/yyyy");
+            rblAlasan.SelectedValue = _recData.KdAlasan.ToString();
+
+            StrukturOrganisasiData _soData = new StrukturOrganisasiSystem().GetStrukturOrganisasiData(_recData.KdDivisi, _recData.StrukturOrganisasi.KdSO);
+            lblJmlKaryawan.Text = _soData.JmlKaryawan.ToString();
+            lblMaxJmlKaryawan.Text = _soData.MaxJmlKaryawan.ToString();
+
+            JabatanData _jabatanData = new JabatanSystem().GetJabatanData(_recData.KdDivisi, _recData.Jabatan.KdJabatan);
+            if (_jabatanData.Fasilitas == "" || _jabatanData.Fasilitas == null)
+            {
+                lblFasilitas.ForeColor = Color.Red;
+                lblFasilitas.Text = "Tidak ada fasilitias";
+            }
+            else
+            {
+                lblFasilitas.ForeColor = Color.Black;
+                lblFasilitas.Text = _jabatanData.Fasilitas;
+            }
+
+            divNoRequest.Visible = true;
+            divJmlKaryawan.Visible = true;
+            divMaxJmlKaryawan.Visible = true;
+            divFasilitas.Visible = true;
+
+            // Jika status request sudah tidak lagi di manager, 
+            // tombol "Proses Permintaan" diubah jadi "Setujui Permintaan"
+            if (_recData.CurrLevelApproval != "1")
+            {
+                pnlHistoryApproval.Visible = true;
+                btnDeclineRecruitment.Visible = true;
+                btnProcess.ToolTip = "Setujui Permintaan";
+
+                HtmlGenericControl html = new HtmlGenericControl();
+                html.InnerHtml = "<i class=\"glyphicon glyphicon-play\"></i>&nbsp;Setujui Permintaan";
+                btnProcess.Controls.Clear();
+                btnProcess.Controls.Add(html);
+
+                // Jika status dokumen berada di rekrutmen,
+                // munculkan panel kandidat (seleksi & interview kandidat)
+                if (_recData.CurrLevelApproval.Equals("5.1") ||
+                    _recData.CurrLevelApproval.Equals("5.2") ||
+                    _recData.CurrLevelApproval.Equals("5.3") ||
+                    _recData.CurrLevelApproval.Equals("5.4")) 
+                {
+                    pnlKandidat.Visible = true;
+                    List<KandidatData> _listMasterKandidat = new KandidatSystem().GetKandidatListNotInRequest(_noRequest);
+                    rptMasterKandidat.DataSource = _listMasterKandidat;
+                    rptMasterKandidat.DataBind();
+
+                    List<KandidatData> _listKandidat = new RecruitmentSystem().GetRecruitmentKandidatList(_noRequest);
+                    rptKandidat.DataSource = _listKandidat;
+                    rptKandidat.DataBind();
+                }
+            }
+
+            ListJobDesc = new RecruitmentSystem().GetRecruitmentJobDescList(_noRequest);
+            rptJobDesc.DataSource = ListJobDesc;
+            rptJobDesc.DataBind();
+
+            ListQualification = new RecruitmentSystem().GetRecruitmentQualification(_noRequest);
+            rptQualification.DataSource = ListQualification;
+            rptQualification.DataBind();
+
+            ddlDivisi.Enabled = false;
+            ddlStrukturOrganisasi.Enabled = false;
+            ddlJabatan.Enabled = false;
+
+            RecruitmentApprovalData _recAppData = new RecruitmentSystem().GetRecruitmentApprovalComment(_noRequest, UserDataSession.KdUser, _recData.CurrLevelApproval);
+            txtComment.Text = _recAppData.Komentar;
+
+            List<RecruitmentApprovalData> _recAppHistoryList = new RecruitmentSystem().GetRequestApprovalHistory(_noRequest);
+            rptApprovalHistory.DataSource = _recAppHistoryList;
+            rptApprovalHistory.DataBind();
+        }
+
+        protected void ddlDivisi_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            BuildSODropdownTree();
+            divJmlKaryawan.Visible = false;
+            divMaxJmlKaryawan.Visible = false;
+        }
+
+        protected void ddlStrukturOrganisasi_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            StrukturOrganisasiData _soData = new StrukturOrganisasiSystem().GetStrukturOrganisasiData(Convert.ToInt32(ddlDivisi.SelectedValue), ddlStrukturOrganisasi.SelectedValue);
+            lblJmlKaryawan.Text = _soData.JmlKaryawan.ToString();
+            lblMaxJmlKaryawan.Text = _soData.MaxJmlKaryawan.ToString();
+            divJmlKaryawan.Visible = true;
+            divMaxJmlKaryawan.Visible = true;
+            BuildJabatanDropdown();
+        }
+
+        protected void ddlJabatan_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            JabatanData _jabatanData = new JabatanSystem().GetJabatanData(Convert.ToInt32(ddlDivisi.SelectedValue), ddlJabatan.SelectedValue);
+            divFasilitas.Visible = true;
+            lblFasilitas.Text = _jabatanData.Fasilitas;
+            BuildJobDescRepeater();
+            BuildQualificationRepeater();
+        }
+
+        protected void rptJobDesc_ItemDataBound(object source, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                JobDescData jobDescItem = (JobDescData)e.Item.DataItem;
+
+                HiddenField hid
+                Label lblJobDesc = (Label)e.Item.FindControl("lblJobDesc");
+                LinkButton btnEdit = (LinkButton)e.Item.FindControl("btnEdit");
+                LinkButton btnDelete = (LinkButton)e.Item.FindControl("btnDelete");
+                LinkButton btnSave = (LinkButton)e.Item.FindControl("btnSave");
+                LinkButton btnCancel = (LinkButton)e.Item.FindControl("btnCancel");
+                RequiredFieldValidator reqEditJobDesc = (RequiredFieldValidator)e.Item.FindControl("reqEditJobDesc");
+
+                lblJobDesc.Text = jobDescItem.JobDesc;
+                btnEdit.CommandName = "EDIT";
+                btnDelete.CommandName = "DELETE";
+                btnSave.CommandName = "SAVE";
+                btnCancel.CommandName = "CANCEL";
+                btnEdit.CommandArgument = e.Item.ItemIndex.ToString();
+                btnDelete.CommandArgument = e.Item.ItemIndex.ToString();
+                btnSave.CommandArgument = e.Item.ItemIndex.ToString();
+                reqEditJobDesc.ValidationGroup = e.Item.ItemIndex.ToString();
+                btnSave.ValidationGroup = e.Item.ItemIndex.ToString();
+
+            }
+        }
+
+        protected void rptJobDesc_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                LinkButton btnEdit = (LinkButton)e.Item.FindControl("btnEdit");
+                LinkButton btnDelete = (LinkButton)e.Item.FindControl("btnDelete");
+                LinkButton btnSave = (LinkButton)e.Item.FindControl("btnSave");
+                LinkButton btnCancel = (LinkButton)e.Item.FindControl("btnCancel");
+                TextBox txtEditJobDesc = (TextBox)e.Item.FindControl("txtEditJobDesc");
+                Label lblJobDesc = (Label)e.Item.FindControl("lblJobDesc");
+
+                if (e.CommandName == "EDIT")
+                {
+                    btnEdit.Visible = false;
+                    btnDelete.Visible = false;
+                    btnSave.Visible = true;
+                    btnCancel.Visible = true;
+
+                    txtEditJobDesc.Text = lblJobDesc.Text;
+                    txtEditJobDesc.Visible = true;
+                    lblJobDesc.Visible = false;
+                }
+                else if (e.CommandName == "SAVE")
+                {
+                    int index = Convert.ToInt32(e.CommandArgument);
+                    ListJobDesc[index].JobDesc = txtEditJobDesc.Text;
+                    rptJobDesc.DataSource = ListJobDesc;
+                    rptJobDesc.DataBind();
+                }
+                else if (e.CommandName == "CANCEL")
+                {
+                    btnEdit.Visible = true;
+                    btnDelete.Visible = true;
+                    btnSave.Visible = false;
+                    btnCancel.Visible = false;
+
+                    txtEditJobDesc.Visible = false;
+                    lblJobDesc.Visible = true;
+                }
+                else if (e.CommandName == "DELETE")
+                {
+                    int index = Convert.ToInt32(e.CommandArgument);
+                    ListJobDesc.RemoveAt(index);
+                    rptJobDesc.DataSource = ListJobDesc;
+                    rptJobDesc.DataBind();
+                }
+            }
+        }
+
+        protected void rptQualification_ItemDataBound(object source, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                QualificationData QualificationItem = (QualificationData)e.Item.DataItem;
+
+                HiddenField hidKdQualification = (HiddenField)e.Item.FindControl("hidKdQualification");
+                Label lblQualification = (Label)e.Item.FindControl("lblQualification");
+                LinkButton btnEdit = (LinkButton)e.Item.FindControl("btnEdit");
+                LinkButton btnDelete = (LinkButton)e.Item.FindControl("btnDelete");
+                LinkButton btnSave = (LinkButton)e.Item.FindControl("btnSave");
+                LinkButton btnCancel = (LinkButton)e.Item.FindControl("btnCancel");
+                RequiredFieldValidator reqEditQualification = (RequiredFieldValidator)e.Item.FindControl("reqEditQualification");
+
+                lblQualification.Text = QualificationItem.Qualification;
+                btnEdit.CommandName = "EDIT";
+                btnDelete.CommandName = "DELETE";
+                btnSave.CommandName = "SAVE";
+                btnCancel.CommandName = "CANCEL";
+                hidKdQualification.Value = QualificationItem.KdQualification.ToString();
+
+                btnEdit.CommandArgument = e.Item.ItemIndex.ToString();
+                btnDelete.CommandArgument = e.Item.ItemIndex.ToString();
+                btnSave.CommandArgument = e.Item.ItemIndex.ToString();
+                reqEditQualification.ValidationGroup = e.Item.ItemIndex.ToString();
+                btnSave.ValidationGroup = e.Item.ItemIndex.ToString();
+            }
+        }
+
+        protected void rptQualification_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                LinkButton btnEdit = (LinkButton)e.Item.FindControl("btnEdit");
+                LinkButton btnDelete = (LinkButton)e.Item.FindControl("btnDelete");
+                LinkButton btnSave = (LinkButton)e.Item.FindControl("btnSave");
+                LinkButton btnCancel = (LinkButton)e.Item.FindControl("btnCancel");
+                TextBox txtEditQualification = (TextBox)e.Item.FindControl("txtEditQualification");
+                Label lblQualification = (Label)e.Item.FindControl("lblQualification ");
+
+                if (e.CommandName == "EDIT")
+                {
+                    btnEdit.Visible = false;
+                    btnDelete.Visible = false;
+                    btnSave.Visible = true;
+                    btnCancel.Visible = true;
+
+                    txtEditQualification.Text = lblQualification.Text;
+                    txtEditQualification.Visible = true;
+                    lblQualification.Visible = false;
+                }
+                else if (e.CommandName == "SAVE")
+                {
+                    int index = Convert.ToInt32(e.CommandArgument);
+                    ListQualification[index].Qualification = txtEditQualification.Text;
+                    rptQualification.DataSource = ListQualification;
+                    rptQualification.DataBind();
+                }
+                else if (e.CommandName == "CANCEL")
+                {
+                    btnEdit.Visible = true;
+                    btnDelete.Visible = true;
+                    btnSave.Visible = false;
+                    btnCancel.Visible = false;
+
+                    txtEditQualification.Visible = false;
+                    lblQualification.Visible = true;
+                }
+                else if (e.CommandName == "DELETE")
+                {
+                    int index = Convert.ToInt32(e.CommandArgument);
+                    ListQualification.RemoveAt(index);
+                    rptQualification.DataSource = ListQualification;
+                    rptQualification.DataBind();
+                }
+            }
+        }
+
+        protected void btnAddJobDesc_Click(object sender, EventArgs e)
+        {
+            JobDescData _data = new JobDescData();
+            _data.JobDesc = txtJobDesc.Text;
+            ListJobDesc.Add(_data);
+            rptJobDesc.DataSource = ListJobDesc;
+            rptJobDesc.DataBind();
+
+            txtJobDesc.Text = "";
+        }
+
+        protected void btnAddQualification_Click(object sender, EventArgs e)
+        {
+            QualificationData _data = new QualificationData();
+            _data.Qualification = txtQualification.Text;
+            ListQualification.Add(_data);
+            rptQualification.DataSource = ListQualification;
+            rptQualification.DataBind();
+
+            txtQualification.Text = "";
+        }
+
+        protected void btnSaveRecruitment_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int result = 0;
+
+                // Tambah baru
+                RecruitmentData _data = new RecruitmentData();
+                _data.KdDivisi = Convert.ToInt32(ddlDivisi.SelectedValue);
+                _data.StrukturOrganisasi = new StrukturOrganisasiData();
+                _data.StrukturOrganisasi.KdSO = ddlStrukturOrganisasi.SelectedValue;
+                _data.Jabatan = new JabatanData();
+                _data.Jabatan.KdJabatan = ddlJabatan.SelectedValue;
+                _data.TglButuh = DateTime.ParseExact(txtTglButuh.Text, "dd/MM/yyyy", null);
+                _data.KdAlasan = Convert.ToInt32(rblAlasan.SelectedValue);
+                _data.JmlOrang = Convert.ToInt32(txtJmlKebutuhanKaryawan.Text);
+                _data.JobDescList = ListJobDesc;
+                if (txtJobDesc.Text.Trim() != "")
+                {
+                    _data.JobDescList.Add(new JobDescData(txtJobDesc.Text));
+                }
+
+                _data.QualificationList = ListQualification;
+                if (txtQualification.Text.Trim() != "")
+                {
+                    _data.QualificationList.Add(new QualificationData(txtQualification.Text));
+                }
+                _data.Creator = UserDataSession.KdUser;
+
+                RecruitmentApprovalData _recAppData = new RecruitmentApprovalData();
+                _recAppData.Komentar = txtComment.Text;
+                _recAppData.IsFinalize = 0;
+                _recAppData.User = new UserData();
+                _recAppData.User.KdUser = UserDataSession.KdUser;
+                _data.ApprovalDataList = new List<RecruitmentApprovalData>();
+                _data.ApprovalDataList.Add(_recAppData);
+
+                // Tentukan apakah edit atau tambah baru
+                if (Request.QueryString["e"] != null && Request.QueryString["e"] == "1" && Request.QueryString["no"] != null && Request.QueryString["no"] != "")
+                {
+                    // Edit
+                    string _noRequest = Rijndael.Decrypt(HttpUtility.UrlDecode(Request.QueryString["no"]));
+                    _data.NoRequest = _noRequest;
+
+                    RecruitmentData _recData = new RecruitmentSystem().GetRecruitmentData(_noRequest);
+                    _data.CurrLevelApproval = _recData.CurrLevelApproval;
+
+                    _recAppData.LvApproval = new LevelApprovalData();
+                    _recAppData.LvApproval.KdLevelApproval = _data.CurrLevelApproval;
+
+                    result = new RecruitmentSystem().UpdateRequest(_data);
+                }
+                else
+                {
+                    _recAppData.LvApproval = new LevelApprovalData();
+                    _data.CurrLevelApproval = "1";
+                    _recAppData.LvApproval = new LevelApprovalData();
+                    _recAppData.LvApproval.KdLevelApproval = "1";
+                    result = new RecruitmentSystem().AddNewRequest(_data);
+                }
+
+                if (result > 0)
+                {
+                    LoadRecruitmentRequestData();
+                    alertNotification.Show("Data sukses disimpan", AlertType.Success);
+                }
+                else
+                {
+                    alertNotification.Show("Data gagal disimpan, silahkan periksa kembali data yang Anda input", AlertType.Danger);
+                }
+            }
+            catch (Exception)
+            {
+                alertNotification.Show("Data gagal disimpan, silahkan periksa kembali data yang Anda input", AlertType.Danger);
+            }
+
+        }
+
+        protected void btnProcessRecruitment_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int result = 0;
+
+                RecruitmentData _data = new RecruitmentData();
+                _data.KdDivisi = Convert.ToInt32(ddlDivisi.SelectedValue);
+                _data.StrukturOrganisasi = new StrukturOrganisasiData();
+                _data.StrukturOrganisasi.KdSO = ddlStrukturOrganisasi.SelectedValue;
+                _data.Jabatan = new JabatanData();
+                _data.Jabatan.KdJabatan = ddlJabatan.SelectedValue;
+                _data.TglButuh = DateTime.ParseExact(txtTglButuh.Text, "dd/MM/yyyy", null);
+                _data.KdAlasan = Convert.ToInt32(rblAlasan.SelectedValue);
+                _data.JmlOrang = Convert.ToInt32(txtJmlKebutuhanKaryawan.Text);
+                _data.JobDescList = ListJobDesc;
+                if (txtJobDesc.Text.Trim() != "")
+                {
+                    _data.JobDescList.Add(new JobDescData(txtJobDesc.Text));
+                }
+
+                _data.QualificationList = ListQualification;
+                if (txtQualification.Text.Trim() != "")
+                {
+                    _data.QualificationList.Add(new QualificationData(txtQualification.Text));
+                }
+                _data.Creator = UserDataSession.KdUser;
+
+                RecruitmentApprovalData _recAppData = new RecruitmentApprovalData();
+                _recAppData.Komentar = txtComment.Text;
+                _recAppData.IsFinalize = 1;
+                _recAppData.User = new UserData();
+                _recAppData.User.KdUser = UserDataSession.KdUser;
+                _data.ApprovalDataList = new List<RecruitmentApprovalData>();
+                _data.ApprovalDataList.Add(_recAppData);
+
+                // Tentukan apakah edit atau tambah baru
+                if (Request.QueryString["e"] != null && Request.QueryString["e"] == "1" &&
+                    Request.QueryString["no"] != null && Request.QueryString["no"] != "")
+                {
+                    // Edit Existing Request
+                    string _noRequest = Rijndael.Decrypt(HttpUtility.UrlDecode(Request.QueryString["no"]));
+                    _data.NoRequest = _noRequest;
+
+                    RecruitmentData _recData = new RecruitmentSystem().GetRecruitmentData(_noRequest);
+
+                    _recAppData.LvApproval = new LevelApprovalData();
+                    _recAppData.LvApproval.KdLevelApproval = _recData.CurrLevelApproval;
+
+                    LevelApprovalData _nextLevelApprovalData = new RecruitmentSystem().GetNextLevelApproval(_data.KdDivisi, _recData.CurrLevelApproval);
+                    _data.CurrLevelApproval = _nextLevelApprovalData.KdLevelApproval;
+
+                    result = new RecruitmentSystem().UpdateRequest(_data);
+                }
+                else
+                {
+                    // New Request
+                    _data.CurrLevelApproval = "2";
+                    _recAppData.LvApproval = new LevelApprovalData();
+                    _recAppData.LvApproval.KdLevelApproval = "1";
+                    result = new RecruitmentSystem().AddNewRequest(_data);
+                }
+
+                if (result > 0)
+                {
+                    Response.Redirect("~/Transaksi/Rekrutmen.aspx");
+                }
+                else
+                {
+                    alertNotification.Show("Data gagal diproses, silahkan periksa kembali data yang Anda input", AlertType.Danger);
+                }
+            }
+            catch (Exception ex)
+            {
+                alertNotification.Show("Data gagal diproses, silahkan periksa kembali data yang Anda input", AlertType.Danger);
+            }
+        }
+
+        protected void rptApprovalHistory_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                Label lblUser = (Label)e.Item.FindControl("lblUser");
+                Label lblLevelApproval = (Label)e.Item.FindControl("lblLevelApproval");
+                Label lblComment = (Label)e.Item.FindControl("lblComment");
+                Label lblTglProses = (Label)e.Item.FindControl("lblTglProses");
+
+                RecruitmentApprovalData _data = (RecruitmentApprovalData)e.Item.DataItem;
+
+                lblUser.Text = _data.User.FullName;
+                lblLevelApproval.Text = _data.LvApproval.KdLevelApproval + ". " + _data.LvApproval.NmLevelApproval;
+                lblComment.Text = _data.Komentar;
+                lblTglProses.Text = _data.TglProses.ToString("dd/MM/yyyy");
+            }
+        }
+
+        protected void btnDeclineRecruitment_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void btnShowAddKandidat_Click(object sender, EventArgs e)
+        {
+            popUpAddKandidat.Show();
+        }
+
+        protected void btnAddKandidat_Click(object sender, EventArgs e)
+        {
+            try
+            {   
+                if (Request.QueryString["no"] != null && Request.QueryString["no"] != "")
+                {
+                    string _noRequest = Rijndael.Decrypt(HttpUtility.UrlDecode(Request.QueryString["no"]));
+                    
+                    KandidatData _dataKandidat = new KandidatData();
+                    _dataKandidat.NmKandidat = txtNamaKandidat.Text;
+                    _dataKandidat.NoIdentitas = txtNoIdentitasKandidat.Text;
+                    _dataKandidat.Gender = Convert.ToChar(chkListGenderKandidat.SelectedValue);
+                    _dataKandidat.NoHandphone = txtNoHandphoneKandidat.Text;
+                    _dataKandidat.Email = txtEmailKandidat.Text;
+
+                    if (fuCVFile.HasFile)
+                    {
+                        string ext = Path.GetExtension(fuCVFile.FileName);
+                        string formatedFileName = Path.GetFileNameWithoutExtension(fuCVFile.FileName).Replace(' ', '_') + DateTime.Now.ToString("ddMMyyyyhhmmss") + ext;
+                        fuCVFile.SaveAs(SystemConfiguration.UploadDirectory + formatedFileName);
+                        _dataKandidat.FileCV = formatedFileName;
+                    }
+
+                    int result = new RecruitmentSystem().AddRecruitmentKandidat(_noRequest, _dataKandidat, UserDataSession.KdUser);
+
+                    if (result > 0)
+                    {
+                        alertNotificationAddKandidat.Show("Kandidat sukses ditambahkan", AlertType.Success);
+
+                        List<KandidatData> _listMasterKandidat = new KandidatSystem().GetKandidatListNotInRequest(_noRequest);
+                        rptMasterKandidat.DataSource = _listMasterKandidat;
+                        rptMasterKandidat.DataBind();
+
+                        List<KandidatData> _listKandidat = new RecruitmentSystem().GetRecruitmentKandidatList(_noRequest);
+                        rptKandidat.DataSource = _listKandidat;
+                        rptKandidat.DataBind();
+
+                        popUpAddKandidat.Hide();
+                    }
+                    else 
+                    {
+                        alertNotificationAddKandidat.Show("Data kandidat gagal disimpan, silahkan periksa kembali data yang Anda input", AlertType.Danger);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                alertNotificationAddKandidat.Show("Data kandidat gagal disimpan, silahkan periksa kembali data yang Anda input", AlertType.Danger);
+            }
+        }
+
+        protected void rptKandidat_ItemDataBound(object sender, RepeaterItemEventArgs e) 
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem) 
+            {
+                Label lblNo = (Label)e.Item.FindControl("lblNo");
+                Label lblNama = (Label)e.Item.FindControl("lblNama");
+                Label lblGender = (Label)e.Item.FindControl("lblGender");
+                Label lblNoIdentitas = (Label)e.Item.FindControl("lblNoIdentitas");
+                Label lblNoHandphone = (Label)e.Item.FindControl("lblNoHandphone");
+                Label lblEmail = (Label)e.Item.FindControl("lblEmail");
+                HyperLink linkDownloadCV = (HyperLink)e.Item.FindControl("linkDownloadCV");
+                LinkButton lbMatching = (LinkButton)e.Item.FindControl("lbMatching");
+                LinkButton lbInterview = (LinkButton)e.Item.FindControl("lbInterview");
+
+                KandidatData kandidatData = (KandidatData)e.Item.DataItem;
+
+                lblNo.Text = (e.Item.ItemIndex + 1).ToString();
+                lblNama.Text = kandidatData.NmKandidat;
+                lblGender.Text = kandidatData.Gender == 'L' ? "Laki-laki" : "Perempuan";
+                lblNoIdentitas.Text = kandidatData.NoIdentitas;
+                lblNoHandphone.Text = kandidatData.NoHandphone;
+                lblEmail.Text = kandidatData.Email;
+                if (kandidatData.FileCV != null && kandidatData.FileCV.Trim() != String.Empty)
+                {
+                    linkDownloadCV.NavigateUrl = SystemConfiguration.UploadDirectory + kandidatData.FileCV;
+                }
+                else 
+                {
+                    linkDownloadCV.Visible = false;
+                }
+
+                lbMatching.CommandName = "MATCHING";
+                lbMatching.CommandArgument = kandidatData.KdKandidat.ToString();
+                lbInterview.CommandName = "INTERVIEW";
+                lbInterview.CommandArgument = kandidatData.KdKandidat.ToString();
+            }
+        }
+
+        protected void rptKandidat_ItemCommand(object sender, RepeaterCommandEventArgs e)
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                if (e.CommandName == "MATCHING") 
+                {
+                    popUpMatchingKandidat.Show();
+                }
+                else if(e.CommandName == "INTERVIEW")
+                {
+                }
+            }
+        }
+
+        protected void rptMasterKandidat_ItemDataBound(object sender, RepeaterItemEventArgs e) 
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                CheckBox chkPilih = (CheckBox)e.Item.FindControl("chkPilih");
+
+                TextBox hidKdKandidat = (TextBox)e.Item.FindControl("hidKdKandidat");
+                Label lblNo = (Label)e.Item.FindControl("lblNo");
+                Label lblNama = (Label)e.Item.FindControl("lblNama");
+                Label lblGender = (Label)e.Item.FindControl("lblGender");
+                Label lblNoIdentitas = (Label)e.Item.FindControl("lblNoIdentitas");
+                Label lblNoHandphone = (Label)e.Item.FindControl("lblNoHandphone");
+                Label lblEmail = (Label)e.Item.FindControl("lblEmail");
+                HyperLink linkDownloadCV = (HyperLink)e.Item.FindControl("linkDownloadCV");
+                
+                KandidatData kandidatData = (KandidatData)e.Item.DataItem;
+
+                hidKdKandidat.Text = kandidatData.KdKandidat.ToString();
+                lblNo.Text = (e.Item.ItemIndex + 1).ToString();
+                lblNama.Text = kandidatData.NmKandidat;
+                lblGender.Text = kandidatData.Gender == 'L' ? "Laki-laki" : "Perempuan";
+                lblNoIdentitas.Text = kandidatData.NoIdentitas;
+                lblNoHandphone.Text = kandidatData.NoHandphone;
+                lblEmail.Text = kandidatData.Email;
+                if (kandidatData.FileCV != null && kandidatData.FileCV.Trim() != String.Empty)
+                {
+                    linkDownloadCV.NavigateUrl = "~/DownloadFile.ashx?name=" + HttpUtility.UrlEncode(Rijndael.Encrypt(kandidatData.FileCV));                    
+                }
+                else
+                {
+                    linkDownloadCV.Visible = false;
+                }
+            }
+        }
+
+        protected void btnAddExistingKandidat_Click(object sender, EventArgs e) 
+        {
+            if (Request.QueryString["no"] != null && Request.QueryString["no"] != "")
+            {
+                string _noRequest = Rijndael.Decrypt(HttpUtility.UrlDecode(Request.QueryString["no"]));
+
+                foreach (RepeaterItem item in rptMasterKandidat.Items)
+                {
+                    if (item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem)
+                    {
+                        CheckBox chkPilih = (CheckBox)item.FindControl("chkPilih");
+                        TextBox hidKdKandidat = (TextBox)item.FindControl("hidKdKandidat");
+                        
+                        if (chkPilih.Checked)
+                        {
+                            int kdKandidat = Convert.ToInt32(hidKdKandidat.Text);
+                            int result = new RecruitmentSystem().AddRecruitmentKandidat(_noRequest, kdKandidat, UserDataSession.KdUser);
+                        }
+                    }
+                }
+
+                List<KandidatData> _listKandidat = new RecruitmentSystem().GetRecruitmentKandidatList(_noRequest);
+                rptKandidat.DataSource = _listKandidat;
+                rptKandidat.DataBind();
+
+                List<KandidatData> _listMasterKandidat = new KandidatSystem().GetKandidatListNotInRequest(_noRequest);
+                rptMasterKandidat.DataSource = _listMasterKandidat;
+                rptMasterKandidat.DataBind();
+
+                popUpAddKandidat.Hide();
+            }
+        }
+
+        protected void rptQualificationMatching_ItemDataBound(object sender, RepeaterItemEventArgs e) 
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                TextBox hidKdQualification = (TextBox)e.Item.FindControl("hidKdQualification");
+                Label lblQualification = (Label)e.Item.FindControl("lblQualification");
+                CheckBox chkMatch = (CheckBox)e.Item.FindControl("chkMatch");
+                TextBox txtComment = (TextBox)e.Item.FindControl("txtComment");
+
+                // Not yet implemented
+
+            }
+        }
+
+        protected void btnSaveQualificationMatching_Click(object sender, EventArgs e)
+        {
+            popUpMatchingKandidat.Hide();
+        }
+
+        protected void rptKandidatInterview_ItemDataBound(object sender, RepeaterItemEventArgs e) 
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                TextBox hidKdInterview = (TextBox)e.Item.FindControl("hidKdInterview");
+                Label lblTglInterview = (Label)e.Item.FindControl("lblTglInterview");
+                Label lblInterviewer = (Label)e.Item.FindControl("lblInterviewer");
+                TextBox txtHasilInterview = (TextBox)e.Item.FindControl("txtHasilInterview");
+                
+
+                // Not yet implemented
+
+            }
+        }
+    }
+}

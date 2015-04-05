@@ -1,0 +1,153 @@
+﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Profile.aspx.cs" Inherits="WirajayaRMS.Web.User.Profile" Title="My Profile" %>
+<%@ MasterType VirtualPath="~/Site.Master" %>
+<%@ Register Src="../UserControl/AlertControl.ascx" TagName="AlertControl" TagPrefix="uc" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <asp:UpdatePanel ID="up1" runat="server">
+        <ContentTemplate>
+            <div class="row">
+                <div class="col-md-12">
+                    <asp:Panel ID="pnlChangeProfile" runat="server" CssClass="box box-info" DefaultButton="btnSaveEdit">
+                        <div class="box-header">
+                            <h3 class="box-title">
+                                Change Profile</h3>
+                            <div class="box-tools pull-right">                                
+                            </div>
+                        </div>
+                        <div class="box-body form-horizontal">                            
+                            <div class="col-sm-9">
+                                <div class="form-group">
+                                    <label class="control-label col-sm-2">
+                                        Username
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <asp:TextBox ID="txtUsername" runat="server" CssClass="form-control" Enabled="false"></asp:TextBox>
+                                        <asp:RequiredFieldValidator ID="reqUsername" runat="server" ControlToValidate="txtUsername"
+                                            ErrorMessage="Field must be filled" Display="Dynamic" ValidationGroup="EditProfile">
+                                        </asp:RequiredFieldValidator>
+                                        <asp:RegularExpressionValidator ID="regUsername" runat="server" ControlToValidate="txtUsername"
+                                            ValidationExpression="^[\w\d]{5,}$" ErrorMessage="Username must be at least 5 characters, allowed characters: a-z, 0-9, atau _"
+                                            Display="Dynamic" ValidationGroup="EditProfile"></asp:RegularExpressionValidator>
+                                    </div>                                
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-sm-2">
+                                        Full Name
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <asp:TextBox ID="txtFullName" runat="server" CssClass="form-control"></asp:TextBox>
+                                        <asp:RequiredFieldValidator ID="reqFullName" runat="server" ControlToValidate="txtFullName"
+                                            ErrorMessage="Field must be filled" Display="Dynamic" ValidationGroup="EditProfile">
+                                        </asp:RequiredFieldValidator>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-sm-2">
+                                        E-mail Address
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <div class="input-group">
+                                            <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                                            <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" Placeholder="e.g., username@domain.com"></asp:TextBox>
+                                            <asp:RequiredFieldValidator ID="reqEmail" runat="server" ControlToValidate="txtEmail"
+                                                ErrorMessage="Field must be filled" Display="Dynamic" ValidationGroup="EditProfile"></asp:RequiredFieldValidator>
+                                            <asp:RegularExpressionValidator ID="regEmail" runat="server" ControlToValidate="txtEmail"
+                                                ErrorMessage="Invalid e-mail format. Valid format: username@domain.com" Display="Dynamic" ValidationGroup="EditProfile"
+                                                ValidationExpression="^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"></asp:RegularExpressionValidator>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        <uc:AlertControl ID="alertNotification" runat="server" Visible="false" Dismissable="true" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <asp:Image ID="imgPhoto" runat="server" ImageUrl="~/img/avatar-default.png"/>
+                            </div>                          
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    &nbsp;
+                                </label>
+                                <div class="col-sm-9">                                    
+                                    <asp:LinkButton ID="btnSaveEdit" OnClick="btnSaveEdit_Click" ToolTip="Simpan Perubahan" runat="server" CssClass="btn btn-primary pull-right">
+                                        <span class="fa fa-save"></span> Save Changes
+                                    </asp:LinkButton>
+                                </div>
+                            </div>
+                        </div>
+                    </asp:Panel>
+                    <asp:Panel ID="pnlChangePassword" runat="server" CssClass="box box-info" DefaultButton="btnChangePassword">
+                        <div class="box-header">
+                            <h3 class="box-title">
+                                Change Password</h3>
+                            <div class="box-tools pull-right">                                
+                            </div>
+                        </div>
+                        <div class="box-body form-horizontal col-sm-9">
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">
+                                    Old password
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:TextBox ID="txtOldPassword" runat="server" CssClass="form-control" TextMode="Password"
+                                        Placeholder="At least 6 characters"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="reqOldPassword" runat="server" ControlToValidate="txtOldPassword"
+                                        ErrorMessage="Field must be filled" Display="Dynamic" ValidationGroup="ChangePassword"></asp:RequiredFieldValidator>
+                                    <asp:RegularExpressionValidator ID="regOldPassword" runat="server" ControlToValidate="txtOldPassword"
+                                        ValidationExpression="^.{6,}$" ErrorMessage="Password must be at least 6 characters" Display="Dynamic"
+                                        ValidationGroup="ChangePassword"></asp:RegularExpressionValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">
+                                    New Password
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:TextBox ID="txtNewPassword" runat="server" CssClass="form-control" TextMode="Password"
+                                        Placeholder="At least 6 characters"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="reqNewPassword" runat="server" ControlToValidate="txtNewPassword"
+                                        ErrorMessage="Field must be filled" Display="Dynamic" ValidationGroup="ChangePassword"></asp:RequiredFieldValidator>
+                                    <asp:RegularExpressionValidator ID="regNewPassword" runat="server" ControlToValidate="txtNewPassword"
+                                        ValidationExpression="^.{6,}$" ErrorMessage="Password must be at least 6 characters" Display="Dynamic"
+                                        ValidationGroup="ChangePassword"></asp:RegularExpressionValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">
+                                    Confirm New Password
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:TextBox ID="txtConfNewPassword" runat="server" CssClass="form-control" TextMode="Password"
+                                        Placeholder="At least 6 characters"></asp:TextBox>
+                                    <asp:CompareValidator ID="compConfNewPassword" runat="server" ControlToCompare="txtNewPassword"
+                                        ControlToValidate="txtConfNewPassword" ErrorMessage="Confirm password did not match" Display="Dynamic"
+                                        Operator="Equal" ValidationGroup="ChangePassword"></asp:CompareValidator>
+                                </div>                                
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <uc:AlertControl ID="alertChangePassword" runat="server" Visible="false" Dismissable="true" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    &nbsp;
+                                </label>
+                                <div class="col-sm-9">                                    
+                                    <asp:LinkButton ID="btnChangePassword" OnClick="btnChangePassword_Click" ToolTip="Ubah Password" runat="server" CssClass="btn btn-primary pull-right">
+                                        <span class="fa fa-check"></span> Change Password
+                                    </asp:LinkButton>
+                                </div>
+                            </div>
+                        </div>
+                    </asp:Panel>
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+</asp:Content>

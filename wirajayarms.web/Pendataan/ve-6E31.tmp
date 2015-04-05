@@ -1,0 +1,287 @@
+﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Jabatan.aspx.cs" Inherits="WirajayaRMS.Web.Pendataan.Jabatan" Title="Jabatan" %>
+<%@ MasterType VirtualPath="~/Site.Master" %>
+<%@ Register Assembly="ASTreeView" Namespace="Geekees.Common.Controls" TagPrefix="gcc" %>
+<%@ Register Src="../UserControl/PopUpControl.ascx" TagName="PopUpControl" TagPrefix="uc" %>
+<%@ Register src="../UserControl/AlertControl.ascx" tagname="AlertControl" tagprefix="uc" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <script type="text/javascript" src="<%# Request.ApplicationPath.TrimEnd('/')%>/js/plugins/astreeview/astreeview_packed.js"></script>
+
+    <link rel="Stylesheet" href="<%# Request.ApplicationPath.TrimEnd('/')%>/css/astreeview/astreeview.css" />
+
+    <script type="text/javascript" src="<%# Request.ApplicationPath.TrimEnd('/')%>/js/plugins/contextmenu/contextmenu_packed.js"></script>
+
+    <link rel="Stylesheet" href="<%# Request.ApplicationPath.TrimEnd('/')%>/css/contextmenu/contextmenu.css" />
+    
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">    
+    <uc:PopUpControl ID="popUpAddEditJabatan" runat="server" HeaderText="Tambah Jabatan"
+        BehaviorID="popUpAddEditJabatan" PopupControlID="pnlAddEditJabatan" />
+        
+    <uc:PopUpControl ID="popUpConfirm" runat="server" HeaderText="Konfirmasi" 
+        BehaviorID="popUpConfirm" PopupControlID="pnlConfirm" Type="Warning"/>
+        
+    <asp:UpdatePanel ID="up1" runat="server">
+    <ContentTemplate>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-info">
+                    <div class="box-header">
+                        <h3 class="box-title">Daftar Jabatan</h3>       
+                        <div class="box-tools pull-right">
+                            <%--<asp:DropDownList ID="ddlDivisi" runat="server" CssClass="btn btn-sm btn-default pull-right" AutoPostBack="true" OnSelectedIndexChanged="ddlDivisi_SelectedIndexChanged">                                
+                            </asp:DropDownList>  --%>
+                        </div>                 
+                    </div>
+                    <div class="box-body">   
+                        <div class="alert alert-info">
+                            <i class="fa fa-info"></i>Anda dapat menambahkan, mengubah, dan menghapus jabatan dengan mengklik kanan pada susunan jabatan
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2 pull-right">
+                            </div>
+                            <div class="col-sm-10">
+                                <gcc:ASTreeView ID="tvJabatan" runat="server" EnableCheckbox="false" EnableNodeIcon="false" EnableRoot="false"
+                                    EnableContextMenuAdd="false" EnableContextMenuEdit="false" EnableContextMenuDelete="false" OnNodeSelectedScript="nodeSelectHandler(elem);"
+                                    EnableDragDrop="false"
+                                    BasePath="~/css/astreeview/" />
+                            </div>
+                        </div>
+                        
+                        <uc:AlertControl ID="alertNotification" runat="server" Visible="false" Dismissable="true"/>
+                        
+                        <%--Hidden field untuk keperluan Add, Edit, Delete--%>
+                        <asp:HiddenField ID="hidKdDivisi" runat="server"></asp:HiddenField>
+                        <asp:HiddenField ID="hidParentKdJabatan" runat="server"></asp:HiddenField>
+                        <asp:HiddenField ID="hidKdJabatan" runat="server"></asp:HiddenField>
+                        <asp:HiddenField ID="hidNamaJabatan" runat="server"></asp:HiddenField>
+                    </div>
+                    <div class="box-footer">
+                        <div class="row">
+                            <div class="pull-right" style="width:230px">
+                                <asp:Button ID="btnAddJabatanBottom" runat="server" Text="Tambah" CssClass="btn btn-primary" disabled="disabled" OnClientClick="return AddJabatan();"/>
+                                <asp:Button ID="btnEditJabatanBottom" runat="server" Text="Ubah" CssClass="btn btn-primary" disabled="disabled" OnClientClick="return EditJabatan();"/>
+                                <asp:Button ID="btnDeleteJabatanBottom" runat="server" Text="Hapus" CssClass="btn btn-danger" disabled="disabled" OnClientClick="return DeleteJabatan();"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ContentTemplate>
+    </asp:UpdatePanel>
+    
+    <%--Pop up untuk add/edit--%>
+    <asp:Panel ID="pnlAddEditJabatan" runat="server">
+        <div class="modal-body">
+            <div class="form">
+                <div class="form-group">
+                    <label class="control-label">
+                        Parent</label>
+                    <asp:TextBox ID="txtParentNmJabatan" runat="server" Enabled="false" CssClass="form-control"></asp:TextBox>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Nama Jabatan</label>
+                    <asp:TextBox ID="txtNamaJabatan" runat="server" CssClass="form-control"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="reqNamaJabatan" runat="server" ControlToValidate="txtNamaJabatan"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditJabatan"></asp:RequiredFieldValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Gaji Minimum</label>
+                    <div class="input-group">
+                        <span class="input-group-addon">Rp</span>
+                        <asp:TextBox ID="txtMinSalary" runat="server" CssClass="form-control numeric"></asp:TextBox>
+                    </div>
+                    <asp:RequiredFieldValidator ID="reqMinSalary" runat="server" ControlToValidate="txtMinSalary"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditJabatan"></asp:RequiredFieldValidator>
+                    <asp:RegularExpressionValidator ID="regMinSalary" runat="server" ControlToValidate="txtMinSalary"
+                        ValidationExpression="^[0-9\,]+$" ErrorMessage="Format harus angka" Display="Dynamic" ValidationGroup="AddEditJabatan"></asp:RegularExpressionValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Gaji Maksimum</label>
+                    <div class="input-group">
+                        <span class="input-group-addon">Rp</span>
+                        <asp:TextBox ID="txtMaxSalary" runat="server" CssClass="form-control numeric"></asp:TextBox>
+                    </div>
+                    <asp:RequiredFieldValidator ID="reqMaxSalary" runat="server" ControlToValidate="txtMaxSalary"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditJabatan"></asp:RequiredFieldValidator>
+                    <asp:RegularExpressionValidator ID="regMaxSalary" runat="server" ControlToValidate="txtMaxSalary"
+                        ValidationExpression="^[0-9\,]+$" ErrorMessage="Format harus angka" Display="Dynamic" ValidationGroup="AddEditJabatan"></asp:RegularExpressionValidator>                    
+                    <asp:CompareValidator runat="server" ErrorMessage="Gaji maksimum harus >= gaji minimum" Type="Currency" ValidationGroup="AddEditJabatan" ControlToValidate="txtMaxSalary" ControlToCompare="txtMinSalary" Operator="GreaterThanEqual">
+                    </asp:CompareValidator>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnAddJabatan" runat="server" CssClass="btn btn-primary" Text="Tambah"
+                OnClick="btnAddJabatan_Click" ValidationGroup="AddEditJabatan" />
+            <asp:Button ID="btnEditJabatan" runat="server" CssClass="btn btn-primary" Text="Simpan"
+                OnClick="btnEditJabatan_Click" ValidationGroup="AddEditJabatan"/>
+        </div>
+    </asp:Panel>
+    
+    <%--Popup untuk konfirmasi delete--%>
+    <asp:Panel ID="pnlConfirm" runat="server">
+        <div class="modal-body">
+            <asp:Label ID="lblConfirm" runat="server"></asp:Label>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnYesConfirm" runat="server" CssClass="btn btn-warning" Text="Ya"
+                OnClick="btnYesConfirm_Click" />
+            <asp:Button ID="btnNoConfirm" runat="server" CssClass="btn btn-primary" Text="Tidak"
+                OnClick="btnNoConfirm_Click" />
+        </div>
+    </asp:Panel>
+    
+    <asp:PlaceHolder runat="server">
+        <script type="text/javascript">
+            function AddJabatan() {
+                var kdDivisi = $('#<%=hidKdDivisi.ClientID%>').val();
+                var kdJabatanParent = $('#<%=hidKdJabatan.ClientID%>').val();
+                var nmJabatanParent = $('#<%=hidNamaJabatan.ClientID%>').val();
+                
+                $('#<%=pnlAddEditJabatan.ClientID%>').parent().parent().find('.modal-title').html('Tambah Jabatan');                
+                $find('popUpAddEditJabatan').show();
+                if (kdJabatanParent == 'root') {
+                    $('#<%=hidParentKdJabatan.ClientID%>').val(0);
+                }
+                else {
+                    $('#<%=hidParentKdJabatan.ClientID%>').val(kdJabatanParent);
+                }
+                $('#<%=txtParentNmJabatan.ClientID%>').val(nmJabatanParent);
+                $('#<%=txtNamaJabatan.ClientID%>').val('');
+                $('#<%=txtMinSalary.ClientID%>').val('');
+                $('#<%=txtMaxSalary.ClientID%>').val('');
+                $('#<%=btnAddJabatan.ClientID%>').show();
+                $('#<%=btnEditJabatan.ClientID%>').hide();
+
+                return false;
+            }
+
+            function EditJabatan() {
+                var kdDivisi = $('#<%=hidKdDivisi.ClientID%>').val();
+                var kdJabatan = $('#<%=hidKdJabatan.ClientID%>').val();
+                
+                $('#<%=pnlAddEditJabatan.ClientID%>').parent().parent().find('.modal-title').html('Ubah Jabatan');
+                $.ajax({
+                    url: 'Jabatan.aspx/GetJabatanData',
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({
+                        kdDivisi: 1,
+                        kdJabatan: kdJabatan
+                    }),
+                    success: function(data) {
+                        var result = data.d;
+                        $('#<%=hidParentKdJabatan.ClientID%>').val(result.ParentKdJabatan);
+                        $('#<%=hidKdJabatan.ClientID%>').val(result.KdJabatan);
+                        $('#<%=txtNamaJabatan.ClientID%>').val(result.NmJabatan);
+                        if (result.ParentNmJabatan) {
+                            $('#<%=txtParentNmJabatan.ClientID%>').val(result.ParentNmJabatan);
+                        }
+                        else {
+                            $('#<%=txtParentNmJabatan.ClientID%>').val('Root');
+                        }
+                        $find('popUpAddEditJabatan').show();
+                        $('#<%=txtMinSalary.ClientID%>').val(result.MinSalary);
+                        $('#<%=txtMinSalary.ClientID%>').keyup();
+                        $('#<%=txtMaxSalary.ClientID%>').val(result.MaxSalary);
+                        $('#<%=txtMaxSalary.ClientID%>').keyup();
+                        $('#<%=btnAddJabatan.ClientID%>').hide();
+                        $('#<%=btnEditJabatan.ClientID%>').show();
+                    }
+                });
+
+                return false;
+            }
+
+            function DeleteJabatan() {
+                var kdDivisi = $('#<%=hidKdDivisi.ClientID%>').val();
+                var kdJabatan = $('#<%=hidKdJabatan.ClientID%>').val();
+                var nmJabatan = $('#<%=hidNamaJabatan.ClientID%>').val();
+
+                if (kdJabatan == kdDivisi) {
+                    alert('Node ini tidak bisa diubah');
+                    return false;
+                }
+                
+                $find('popUpConfirm').show();
+                $('#<%=hidKdJabatan.ClientID%>').val(kdJabatan);
+                $('#<%=lblConfirm.ClientID%>').html('Anda yakin ingin menghapus jabatan <b>"' + nmJabatan + '"</b>?<br/>Jabatan akan dihapus beserta seluruh sub-jabatan yang ada di bawahnya');
+                return false;
+            }
+
+            function onAddContextMenu(clientID) {
+                var kdDivisi = $(clientID.getSelectedItem()).parents('li:last').atrr('treeNodeValue');
+                var kdJabatanParent = clientID.getSelectedItem().parentNode.getAttribute('treeNodeValue');
+                var nmJabatanParent = $(clientID.getSelectedItem()).text();
+
+                $('#<%=hidKdDivisi.ClientID%>').val(kdDivisi);
+                $('#<%=hidNamaJabatan.ClientID%>').val(nmJabatanParent);
+                $('#<%=hidKdJabatan.ClientID%>').val(kdJabatanParent);
+                
+                return AddJabatan();
+            }
+
+            function onEditContextMenu(clientID) {
+                var kdDivisi = $(clientID.getSelectedItem()).parents('li:last').atrr('treeNodeValue');
+                var kdJabatan = clientID.getSelectedItem().parentNode.getAttribute('treeNodeValue');
+                if (kdJabatan == kdDivisi) {
+                    alert('Node ini tidak bisa diubah');
+                    return false;
+                }
+
+                $('#<%=hidKdDivisi.ClientID%>').val(kdDivisi);
+                $('#<%=hidKdJabatan.ClientID%>').val(kdJabatan);
+                
+                return EditJabatan();
+            }
+
+            function onDeleteContextMenu(clientID) {
+                var kdDivisi = $(clientID.getSelectedItem()).parents('li:last').atrr('treenodevalue');
+                var kdJabatan = clientID.getSelectedItem().parentNode.getAttribute('treeNodeValue');
+                var nmJabatan = $(clientID.getSelectedItem()).text();
+                if (kdJabatan == 'root') {
+                    alert('Node ini tidak bisa dihapus');
+                    return false;
+                }
+
+                $('#<%=hidKdDivisi.ClientID%>').val(kdDivisi);
+                $('#<%=hidNamaJabatan.ClientID%>').val(nmJabatan);
+                $('#<%=hidKdJabatan.ClientID%>').val(kdJabatan);
+                
+                return DeleteJabatan();
+            }
+
+            function nodeSelectHandler(elem) {
+                var kdDivisi = $(item).parents('li:last').atrr('treenodevalue');
+                var kdJabatan = elem.parentNode.getAttribute("treeNodeValue");
+                var nmJabatan = $(elem).text();
+                $('#<%=hidKdDivisi.ClientID%>').val(kdDivisi);
+                $('#<%=hidNamaJabatan.ClientID%>').val(nmJabatan);
+                $('#<%=hidKdJabatan.ClientID%>').val(kdJabatan);
+                $('#<%=btnAddJabatanBottom.ClientID%>').removeAttr('disabled');
+                $('#<%=btnEditJabatanBottom.ClientID%>').removeAttr('disabled');
+                $('#<%=btnDeleteJabatanBottom.ClientID%>').removeAttr('disabled');
+            }
+            
+            function pageLoad() {
+                $('input.numeric').keyup(function(event) {
+                    // skip for arrow keys
+                    if (event.which >= 37 && event.which <= 40) return;
+
+                    // format number
+                    $(this).val(function(index, value) {
+                        return value.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    });
+                });
+            }
+            pageLoad();
+            Sys.Application.add_load(pageLoad);
+        </script>
+
+    </asp:PlaceHolder>
+</asp:Content>

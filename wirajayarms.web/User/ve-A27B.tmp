@@ -1,0 +1,145 @@
+﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Profile.aspx.cs" Inherits="WirajayaRMS.Web.User.Profile" Title="Untitled Page" %>
+<%@ MasterType VirtualPath="~/Site.Master" %>
+<%@ Register Src="../UserControl/AlertControl.ascx" TagName="AlertControl" TagPrefix="uc" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <asp:UpdatePanel ID="up1" runat="server">
+        <ContentTemplate>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-info">
+                        <div class="box-header">
+                            <h3 class="box-title">
+                                Profil Saya</h3>
+                            <div class="box-tools pull-right">                                
+                            </div>
+                        </div>
+                        <div class="box-body form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Username
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:TextBox ID="txtUsername" runat="server" CssClass="form-control" Enabled="false"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="reqUsername" runat="server" ControlToValidate="txtUsername"
+                                        ErrorMessage="Field harus diisi" Display="Dynamic" ValidationGroup="EditProfile">
+                                    </asp:RequiredFieldValidator>
+                                    <asp:RegularExpressionValidator ID="regUsername" runat="server" ControlToValidate="txtUsername"
+                                        ValidationExpression="^[\w\d]{5,}$" ErrorMessage="Username minimal 5 karakter, karakter yang diizinkan: a-z, 0-9, atau _"
+                                        Display="Dynamic" ValidationGroup="EditProfile"></asp:RegularExpressionValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Nama Lengkap
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:TextBox ID="txtFullName" runat="server"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="reqFullName" runat="server" ControlToValidate="txtFullName"
+                                        ErrorMessage="Field harus diisi" Display="Dynamic" ValidationGroup="EditProfile">
+                                    </asp:RequiredFieldValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    E-mail
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                                    <asp:TextBox ID="txtEmail" runat="server" CssClass="form-control" Placeholder="Misal: username@domain.com"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="reqEmail" runat="server" ControlToValidate="txtEmail"
+                                        ErrorMessage="Field harus diisi" Display="Dynamic" ValidationGroup="EditProfile"></asp:RequiredFieldValidator>
+                                    <asp:RegularExpressionValidator ID="regEmail" runat="server" ControlToValidate="txtEmail"
+                                        ErrorMessage="Format email tidak valid" Display="Dynamic" ValidationGroup="EditProfile"
+                                        ValidationExpression="^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"></asp:RegularExpressionValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    &nbsp;
+                                </label>
+                                <div class="col-sm-9">
+                                    <uc:AlertControl ID="alertNotification" runat="server" Visible="false" Dismissable="true" />
+                                    <asp:LinkButton ID="btnSaveEdit" OnClick="btnSaveEdit_Click" ToolTip="Simpan Perubahan" runat="server" CssClass="btn btn-sm btn-primary">
+                                        <span class="fa fa-save"></span> Simpan Perubahan
+                                    </asp:LinkButton>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="box box-info">
+                        <div class="box-header">
+                            <h3 class="box-title">
+                                Ubah Password</h3>
+                            <div class="box-tools pull-right">                                
+                            </div>
+                        </div>
+                        <div class="box-body form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Password Lama
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:TextBox ID="txtOldPassword" runat="server" CssClass="form-control" TextMode="Password"
+                                        Placeholder="Minimal 6 karakter"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="reqOldPassword" runat="server" ControlToValidate="txtOldPassword"
+                                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="ChangePassword"></asp:RequiredFieldValidator>
+                                    <asp:RegularExpressionValidator ID="regOldPassword" runat="server" ControlToValidate="txtOldPassword"
+                                        ValidationExpression="^.{6,}$" ErrorMessage="Password minimal 6 karakter" Display="Dynamic"
+                                        ValidationGroup="ChangePassword"></asp:RegularExpressionValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Password Baru
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:TextBox ID="txtNewPassword" runat="server" CssClass="form-control" TextMode="Password"
+                                        Placeholder="Minimal 6 karakter"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ControlToValidate="txtOldPassword"
+                                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="ChangePassword"></asp:RequiredFieldValidator>
+                                    <asp:RegularExpressionValidator ID="RegularExpressionValidator1" runat="server" ControlToValidate="txtOldPassword"
+                                        ValidationExpression="^.{6,}$" ErrorMessage="Password minimal 6 karakter" Display="Dynamic"
+                                        ValidationGroup="ChangePassword"></asp:RegularExpressionValidator>
+                                        
+                                    <asp:TextBox ID="txtConfPasswordEdit" runat="server" CssClass="form-control" TextMode="Password"
+                                        Placeholder="Minimal 6 karakter"></asp:TextBox>
+                                    <asp:CompareValidator ID="compConfPasswordEdit" runat="server" ControlToCompare="txtPasswordEdit"
+                                        ControlToValidate="txtConfPasswordEdit" ErrorMessage="Password tidak sama" Display="Dynamic"
+                                        Operator="Equal" ValidationGroup="ChangePassword"></asp:CompareValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    E-mail
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+                                    <asp:TextBox ID="TextBox3" runat="server" CssClass="form-control" Placeholder="Misal: username@domain.com"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ControlToValidate="txtEmail"
+                                        ErrorMessage="Field harus diisi" Display="Dynamic" ValidationGroup="EditProfile"></asp:RequiredFieldValidator>
+                                    <asp:RegularExpressionValidator ID="RegularExpressionValidator2" runat="server" ControlToValidate="txtEmail"
+                                        ErrorMessage="Format email tidak valid" Display="Dynamic" ValidationGroup="EditProfile"
+                                        ValidationExpression="^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"></asp:RegularExpressionValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    &nbsp;
+                                </label>
+                                <div class="col-sm-9">
+                                    <uc:AlertControl ID="AlertControl1" runat="server" Visible="false" Dismissable="true" />
+                                    <asp:LinkButton ID="LinkButton1" OnClick="btnSaveEdit_Click" ToolTip="Simpan Perubahan" runat="server" CssClass="btn btn-sm btn-primary">
+                                        <span class="fa fa-save"></span> Simpan Perubahan
+                                    </asp:LinkButton>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+</asp:Content>

@@ -1,0 +1,155 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using WirajayaRMS.Business.Entities;
+using WirajayaRMS.DataAccess.Components;
+
+namespace WirajayaRMS.Business.ApplicationFacade
+{
+    public class StrukturOrganisasiSystem
+    {
+        public List<StrukturOrganisasiData> GetAllListStrukturOrganisasi(int kdDivisi)
+        {
+            try
+            {
+                List<StrukturOrganisasiData> _listSO = new StrukturOrganisasiDB().GetListStrukturOrganisasi(kdDivisi, null);
+                List<StrukturOrganisasiData> _finalList = new List<StrukturOrganisasiData>();
+
+                List<StrukturOrganisasiData> _parentList = _listSO.Where(item => item.ParentKdSO == "0").ToList();
+                foreach (StrukturOrganisasiData _item in _parentList)
+                {
+                    _item.ChildNode = GetChildStrukturOrganisasi(_item, _listSO);
+                    _finalList.Add(_item);
+                }
+
+                return _finalList;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        private List<StrukturOrganisasiData> GetChildStrukturOrganisasi(StrukturOrganisasiData node, List<StrukturOrganisasiData> list)
+        {
+            List<StrukturOrganisasiData> _list = list.Where(item => item.ParentKdSO == node.KdSO).ToList();
+            foreach (StrukturOrganisasiData _item in _list)
+            {
+                _item.ChildNode = GetChildStrukturOrganisasi(_item, list);
+            }
+            return _list;
+        }
+
+        public List<StrukturOrganisasiData> GetListStrukturOrganisasi(int kdDivisi, string parentKdSO)
+        {
+            try
+            {
+                return new StrukturOrganisasiDB().GetListStrukturOrganisasi(kdDivisi, parentKdSO);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
+        public int InsertStrukturOrganisasi(StrukturOrganisasiData soData)
+        {
+            try
+            {
+                List<StrukturOrganisasiData> _childNodes = new StrukturOrganisasiSystem().GetListStrukturOrganisasi(soData.KdDivisi, soData.ParentKdSO);
+
+                // Generate Kode Unit
+                if (_childNodes.Count == 0)
+                {
+                    if (soData.ParentKdSO == "0")
+                    {
+                        soData.KdSO = "1";
+                    }
+                    else
+                    {
+                        soData.KdSO = soData.KdSO + ".1";
+                    }
+                }
+                else
+                {
+                    string _maxKdSO = _childNodes.Max(item => item.KdSO);
+
+                    int _lastDotPosition = _maxKdSO.LastIndexOf('.');
+                    if (_lastDotPosition > 0)
+                    {
+                        int _newNode = Convert.ToInt32(_maxKdSO.Substring(_lastDotPosition + 1)) + 1;
+                        string _prefix = _maxKdSO.Substring(0, _lastDotPosition);
+                        soData.KdSO = _prefix + "." + _newNode.ToString();
+                    }
+                    else
+                    {
+                        soData.KdSO = (Convert.ToInt32(_maxKdSO) + 1).ToString();
+                    }
+                }
+
+                return new StrukturOrganisasiDB().InsertStrukturOrganisasi(soData);
+            }
+            catch (Exception ex)
+            {
+                
+                throw ex;
+            }
+        }
+
+        public StrukturOrganisasiData GetStrukturOrganisasiData(int kdDivisi, string kdSO)
+        {
+            try
+            {
+                return new StrukturOrganisasiDB().GetStrukturOrganisasiData(kdDivisi, kdSO);
+            }
+            catch (Exception ex)
+            {
+                
+                throw ex;
+            }
+        }
+
+        public int UpdateStrukturOrganisasi(StrukturOrganisasiData soData)
+        {
+            try
+            {
+                return new StrukturOrganisasiDB().UpdateStrukturOrganisasi(soData);
+            }
+            catch (Exception ex)
+            {
+                
+                throw;
+            }
+        }
+
+        public int DeleteStrukturOrganisasi(int kdDivisi, string kdSO)
+        {
+            try
+            {
+                return new StrukturOrganisasiDB().DeleteStrukturOrganisasi(kdDivisi, kdSO);
+            }
+            catch (Exception ex)
+            {
+                
+                throw ex;
+            }
+        }
+
+        public List<StrukturOrganisasiData> GetTopLevelListStrukturOrganisasi(int kdDivisi)
+        {
+            try
+            {
+                List<StrukturOrganisasiData> _listSO = new StrukturOrganisasiDB().GetListStrukturOrganisasi(kdDivisi, null);
+                return _listSO.Where(item => item.ParentKdSO == "0").ToList();
+            }
+            catch (Exception ex)
+            {
+                
+                throw ex;
+            }
+        }
+    }
+}

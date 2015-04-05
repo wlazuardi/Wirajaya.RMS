@@ -1,0 +1,128 @@
+<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="JobDesc.aspx.cs"
+    Inherits="WirajayaRMS.Web.Pendataan.JobDesc" Title="Job Description" %>
+
+<%@ MasterType VirtualPath="~/Site.Master" %>
+<%@ Register Src="../UserControl/AlertControl.ascx" TagName="AlertControl" TagPrefix="uc" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <asp:UpdatePanel ID="up1" runat="server">
+        <ContentTemplate>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-info">
+                        <div class="box-header">
+                            <h3 class="box-title">
+                                Daftar Job Desc</h3>
+                            <div class="box-tools pull-right">
+                                <asp:DropDownList ID="ddlDivisi" runat="server" CssClass="btn btn-sm btn-default pull-right"
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlDivisi_SelectedIndexChanged">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                        <div class="box-body form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Struktur Organisasi
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:DropDownList ID="ddlStrukturOrganisasi" runat="server" AutoPostBack="true" CssClass="form-control"
+                                        OnSelectedIndexChanged="ddlStrukturOrganisasi_SelectedIndexChanged">
+                                    </asp:DropDownList>
+                                    <asp:RequiredFieldValidator ID="reqStrukturOrganisasi" runat="server" ControlToValidate="ddlStrukturOrganisasi"
+                                        ErrorMessage="Field harus diisi" Display="Dynamic" InitialValue="0" ValidationGroup="AddJobDesc">
+                                    </asp:RequiredFieldValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Jabatan
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:DropDownList ID="ddlJabatan" runat="server" AutoPostBack="true" CssClass="form-control"
+                                        OnSelectedIndexChanged="ddlJabatan_SelectedIndexChanged">
+                                    </asp:DropDownList>
+                                    <asp:RequiredFieldValidator ID="reqJabatan" runat="server" ControlToValidate="ddlJabatan"
+                                        ErrorMessage="Field harus diisi" Display="Dynamic" InitialValue="0" ValidationGroup="AddJobDesc">
+                                    </asp:RequiredFieldValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Job Description List
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:Label ID="lblMessage" runat="server"></asp:Label>
+                                    <asp:Repeater ID="rptJobDesc" runat="server" OnItemDataBound="rptJobDesc_ItemDataBound">
+                                        <HeaderTemplate>
+                                            <table class="table table-striped">
+                                                <tr>
+                                                    <th width="20">
+                                                        #
+                                                    </th>
+                                                    <th>
+                                                        Job Description Point
+                                                    </th>
+                                                    <th width="90">
+                                                        Opsi
+                                                    </th>
+                                                </tr>
+                                        </HeaderTemplate>
+                                        <ItemTemplate>
+                                            <tr>
+                                                <td>
+                                                    <%# Container.ItemIndex + 1 %>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litJobDesc" runat="server"></asp:Literal>
+                                                    <asp:TextBox ID="txtEditJobDesc" runat="server" TextMode="MultiLine"></asp:TextBox>
+                                                    <asp:RequiredFieldValidator ID="reqEditJobDesc" runat="server" ControlToValidate="txtEditJobDesc"
+                                                        Display="Dynamic" ErrorMessage="Field harus diisi">
+                                                    </asp:RequiredFieldValidator>
+                                                </td>
+                                                <td>
+                                                    <button id="btnSave" title="Simpan" runat="server" class="btn btn-sm btn-primary">
+                                                        <span class="fa fa-edit"></span>
+                                                    </button>
+                                                    <button id="btnEdit" title="Ubah" runat="server" class="btn btn-sm btn-primary">
+                                                        <span class="fa fa-edit"></span>
+                                                    </button>
+                                                    <button id="btnDelete" title="Hapus" runat="server" class="btn btn-sm btn-danger">
+                                                        <span class="fa fa-times"></span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </ItemTemplate>
+                                        <FooterTemplate>
+                                            </table>
+                                        </FooterTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    &nbsp;
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:TextBox ID="txtJobDesc" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="reqJobDesc" runat="server" ControlToValidate="txtJobDesc"
+                                        ErrorMessage="Field harus diisi" ValidationGroup="AddJobDesc"></asp:RequiredFieldValidator>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    &nbsp;
+                                </label>
+                                <div class="col-sm-9">
+                                    <uc:AlertControl ID="alertNotification" runat="server" Visible="false" Dismissable="true" />
+                                    <asp:Button ID="btnAddJobDesc" runat="server" Text="Tambah Job Desc" OnClick="btnAddJobDesc_Click"
+                                        ValidationGroup="AddJobDesc" CssClass="btn btn-primary pull-right" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+</asp:Content>

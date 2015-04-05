@@ -1,0 +1,389 @@
+﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="UserAccess.aspx.cs"
+    Inherits="WirajayaRMS.Web.Settings.UserAccess" Title="User Access" %>
+
+<%@ MasterType VirtualPath="~/Site.Master" %>
+<%@ Register Src="../UserControl/AlertControl.ascx" TagName="AlertControl" TagPrefix="uc" %>
+<%@ Register Src="../UserControl/PopUpControl.ascx" TagName="PopUpControl" TagPrefix="uc" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+    <asp:UpdatePanel ID="up1" runat="server">
+        <ContentTemplate>
+            <style>
+                .myCheckbox label
+                {
+                    margin-left: 10px;
+                }
+            </style>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="box box-info">
+                        <div class="box-header">
+                            <h3 class="box-title">
+                                Daftar User Access</h3>
+                            <div class="box-tools pull-right">
+                            </div>
+                        </div>
+                        <div class="box-body form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Divisi
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:DropDownList ID="ddlDivisi" runat="server" AutoPostBack="true" CssClass="form-control"
+                                        OnSelectedIndexChanged="ddlDivisi_SelectedIndexChanged">
+                                    </asp:DropDownList>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Struktur Organisasi
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:DropDownList ID="ddlStrukturOrganisasi" runat="server" AutoPostBack="true" CssClass="form-control"
+                                        OnSelectedIndexChanged="ddlStrukturOrganisasi_SelectedIndexChanged">
+                                    </asp:DropDownList>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">
+                                    Level Approval
+                                </label>
+                                <div class="col-sm-9">
+                                    <asp:DropDownList ID="ddlLevelApproval" runat="server" AutoPostBack="true" CssClass="form-control"
+                                        OnSelectedIndexChanged="ddlLevelApproval_SelectedIndexChanged">
+                                    </asp:DropDownList>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <asp:Repeater ID="rptUserAccess" runat="server" OnItemDataBound="rptUserAccess_ItemDataBound"
+                                        OnItemCommand="rptUserAccess_ItemCommand">
+                                        <HeaderTemplate>
+                                            <table class="table table-border table-striped" id="tblUserAccess">
+                                                <thead>
+                                                    <tr>
+                                                        <th>
+                                                            No.
+                                                        </th>
+                                                        <th>
+                                                            Username
+                                                        </th>
+                                                        <th>
+                                                            Divisi
+                                                        </th>
+                                                        <th>
+                                                            Struktur Organisasi
+                                                        </th>                                                        
+                                                        <th>
+                                                            Level Approval
+                                                        </th>
+                                                        <th width="90">
+                                                            Opsi
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                        </HeaderTemplate>
+                                        <ItemTemplate>
+                                            <tr>
+                                                <td>
+                                                    <%# Container.ItemIndex + 1 %>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litUsername" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litDivisi" runat="server"></asp:Literal>
+                                                </td>                                                
+                                                <td>
+                                                    <asp:Literal ID="litStrukturOrganisasi" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:Literal ID="litLevelApproval" runat="server"></asp:Literal>
+                                                </td>
+                                                <td>
+                                                    <asp:LinkButton ID="btnEdit" ToolTip="Ubah" runat="server" Width="35" CssClass="btn btn-sm btn-primary">
+                                                        <span class="fa fa-pencil"></span>
+                                                    </asp:LinkButton>
+                                                    <asp:LinkButton ID="btnDelete" ToolTip="Hapus" runat="server" Width="35" CssClass="btn btn-sm btn-danger">
+                                                        <span class="fa fa-trash-o"></span>
+                                                    </asp:LinkButton>
+                                                </td>
+                                            </tr>
+                                        </ItemTemplate>
+                                        <FooterTemplate>
+                                                </tbody>
+                                            </table>
+                                        </FooterTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <uc:AlertControl ID="alertNotification" runat="server" Visible="false" Dismissable="true" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <asp:Button ID="btnAddNewAccess" runat="server" Text="Tambah User Access..." OnClick="btnAddNewAccess_Click"
+                                        CssClass="btn btn-primary pull-right" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script type="text/javascript">
+                var prm = Sys.WebForms.PageRequestManager.getInstance();
+
+                function pageLoad() {
+                    $('#tblUserAccess').dataTable({
+                        "bPaginate": true,
+                        "bLengthChange": false,
+                        "bStateSave": true,
+                        "bFilter": false,
+                        "bSort": true,
+                        "bInfo": true,
+                        "bAutoWidth": false
+                    });
+                }
+                
+                prm.add_endRequest(function(s, e) {
+                    
+                });
+            </script>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    
+    <uc:PopUpControl ID="popUpConfirm" runat="server" HeaderText="Konfirmasi" 
+        BehaviorID="popUpConfirm" PopupControlID="pnlConfirm" Type="Warning"/>
+        
+    <uc:PopUpControl ID="popUpAddEditUserAccess" runat="server" HeaderText="Tambah / Ubah User Access"
+        BehaviorID="popUpAddEditUserAccess" PopupControlID="pnlAddEditUserAccess" Type="Default" />
+    
+    <uc:PopUpControl ID="popUpSearchUser" runat="server" HeaderText="Cari User" BehaviorID="popUpSearchUser"
+        PopupControlID="pnlSearchUser" Type="Default" EnableCloseBtn="false" />
+        
+    <asp:Panel ID="pnlSearchUser" runat="server" DefaultButton="btnSearch">
+        <div class="modal-body">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-sm-2">
+                        Username</label>
+                    <div class="col-sm-10">
+                        <asp:TextBox ID="txtUsernameSearch" runat="server" CssClass="form-control" Placeholder="Cari username"></asp:TextBox>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2">
+                        Nama Lengkap</label>
+                    <div class="col-sm-10">
+                        <asp:TextBox ID="txtFullNameSearch" runat="server" CssClass="form-control" Placeholder="Cari nama panjang"></asp:TextBox>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2">
+                        E-mail</label>
+                    <div class="col-sm-10">
+                        <asp:TextBox ID="txtEmailSearch" runat="server" CssClass="form-control" Placeholder="Cari e-mail"></asp:TextBox>
+                    </div>
+
+                    <script>
+                        // javascript to add to your aspx page
+                        function CheckAllParameter() {
+                            var txtUsernameSearch = document.getElementById('<%= txtUsernameSearch.ClientID %>');
+                            var txtFullNameSearch = document.getElementById('<%= txtFullNameSearch.ClientID %>');
+                            var txtEmailSearch = document.getElementById('<%= txtEmailSearch.ClientID %>');
+
+                            if (txtUsernameSearch.value.length < 3 && txtFullNameSearch.value.length < 3 && txtEmailSearch.value.length < 3) {
+                                return false;
+                            }
+
+                            return true;
+                        }
+
+                        function ValidateSearch(source, args) {
+                            if (CheckAllParameter() == false)
+                                args.IsValid = false;
+                            else
+                                args.IsValid = true;
+                        }
+                    </script>
+
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <asp:CustomValidator runat="server" ID="cvSearchUser" ClientValidationFunction="ValidateSearch"
+                            ErrorMessage="Input salah satu field minimal 3 karakter"
+                            Display="Dynamic" ValidationGroup="SearchUser"></asp:CustomValidator>
+                        <asp:Button ID="btnSearch" runat="server" CssClass="btn btn-primary pull-right" Text="Cari"
+                            ValidationGroup="SearchUser" OnClick="btnSearch_Click" />
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col-sm-12">
+                        <asp:Repeater ID="rptUserSearch" runat="server" OnItemDataBound="rptUserSearch_ItemDataBound" OnItemCommand="rptUserSearch_OnItemCommand">
+                            <HeaderTemplate>
+                                <table class="table table-striped">
+                                    <tr>
+                                        <th>
+                                            Username
+                                        </th>
+                                        <th>
+                                            Nama Lengkap
+                                        </th>
+                                        <th>
+                                            E-mail
+                                        </th>
+                                        <th>
+                                            Pilih
+                                        </th>
+                                    </tr>
+                            </HeaderTemplate>
+                            <ItemTemplate>
+                                <tr>
+                                    <td>
+                                        <asp:Literal ID="litUsername" runat="server"></asp:Literal>
+                                    </td>
+                                    <td>
+                                        <asp:Literal ID="litFullName" runat="server"></asp:Literal>
+                                    </td>
+                                    <td>
+                                        <asp:Literal ID="litEmail" runat="server"></asp:Literal>
+                                    </td>
+                                    <td>
+                                        <asp:LinkButton ID="btnChoose" runat="server" Text="Pilih" CssClass="btn btn-sm btn-success">
+                                        <i class="fa fa-check"></i>
+                                        </asp:LinkButton>
+                                    </td>
+                                </tr>
+                            </ItemTemplate>
+                            <FooterTemplate>
+                                </table>
+                            </FooterTemplate>
+                        </asp:Repeater>
+                    </div>
+                </div>
+                <%--<div class="form-group">
+                    <label class="control-label">
+                        Hak Akses Menu</label>
+                    <asp:CheckBoxList ID="CheckBoxList1" runat="server" CssClass="myCheckbox">
+                        <asp:ListItem Text="Pendataan" Value="1"></asp:ListItem>
+                        <asp:ListItem Text="Setting" Value="2"></asp:ListItem>
+                        <asp:ListItem Text="Request" Value="3"></asp:ListItem>
+                        <asp:ListItem Text="Kandidat" Value="4"></asp:ListItem>
+                    </asp:CheckBoxList>
+                   
+                </div>--%>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnCancelSearch" runat="server" CssClass="btn btn-danger pull-right"
+                Text="Batal" ValidationGroup="SearchUser" OnClick="btnCancelSearch_Click" />
+        </div>
+    </asp:Panel>
+        
+    <asp:Panel ID="pnlAddEditUserAccess" runat="server" DefaultButton="btnSaveAddUserAcces">
+        <div class="modal-body">
+            <div class="form">
+                <div class="form-group">
+                    <label class="control-label">
+                        Username</label>
+                    <div class="input-group">
+                        <asp:HiddenField ID="hidArgument" runat="server"/>
+                        <asp:TextBox ID="txtUsername" runat="server" CssClass="form-control" Placeholder="Tanpa spasi, minimal 5 karakter, misal: johndoe" Enabled="false"></asp:TextBox>
+                        <span class="input-group-btn">
+                            <asp:LinkButton ID="btnShowSearchUser" runat="server" CssClass="btn btn-info btn-flat"
+                                OnClick="btnShowSearchUser_Click">
+                                <i class="fa fa-search"></i>
+                            </asp:LinkButton>
+                        </span>
+                    </div>
+                    <asp:RequiredFieldValidator ID="reqUsername" runat="server" ControlToValidate="txtUsername"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditUserAccess">
+                    </asp:RequiredFieldValidator>
+                    <asp:RegularExpressionValidator ID="regUsername" runat="server" ControlToValidate="txtUsername"
+                        ValidationExpression="^[\w\d]{5,}$" ErrorMessage="Username minimal 5 karakter, karakter yang diizinkan: a-z, 0-9, atau _"
+                        Display="Dynamic" ValidationGroup="AddEditUserAccess">
+                    </asp:RegularExpressionValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Divisi</label>
+                    <asp:DropDownList ID="ddlDivisiAddEdit" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlDivisiAddEdit_SelectedIndexChanged">
+                    </asp:DropDownList>
+                    <asp:RequiredFieldValidator ID="reqDivisiAddEdit" runat="server" ControlToValidate="ddlDivisiAddEdit"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditUserAccess"
+                        InitialValue="0">
+                    </asp:RequiredFieldValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Struktur Organisasi</label>
+                    <asp:DropDownList ID="ddlStrukturOrganisasiAddEdit" runat="server" CssClass="form-control">
+                    </asp:DropDownList>
+                    <asp:RequiredFieldValidator ID="reqStrukturOrganisasi" runat="server" ControlToValidate="ddlStrukturOrganisasiAddEdit"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditUserAccess"
+                        InitialValue="0">
+                    </asp:RequiredFieldValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Level Approval</label>
+                    <asp:DropDownList ID="ddlLevelApprovalAddEdit" runat="server" CssClass="form-control">
+                    </asp:DropDownList>
+                    <asp:RequiredFieldValidator ID="reqLevelApprovalAddEdit" runat="server" ControlToValidate="ddlLevelApprovalAddEdit"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditUserAccess"
+                        InitialValue="0">
+                    </asp:RequiredFieldValidator>
+                </div>
+                <%--<div class="form-group">
+                    <label class="control-label">
+                        Hak Akses Menu</label>
+                    <asp:CheckBoxList ID="chkListMenuAccess" runat="server" CssClass="myCheckbox">
+                        <asp:ListItem Text="Pendataan" Value="1"></asp:ListItem>
+                        <asp:ListItem Text="Setting" Value="2"></asp:ListItem>
+                        <asp:ListItem Text="Request" Value="3"></asp:ListItem>
+                        <asp:ListItem Text="Kandidat" Value="4"></asp:ListItem>
+                    </asp:CheckBoxList>
+                    <asp:CustomValidator runat="server" ID="cvListMenuAccess" ClientValidationFunction="ValidateMenuAccess"
+                        ErrorMessage="Pilih salah satu menu" Display="Dynamic" ValidationGroup="AddEditUserAccess"></asp:CustomValidator>
+
+                    <script>
+                        // javascript to add to your aspx page
+                        function ValidateMenuAccess(source, args) {
+                            var chkListModules = document.getElementById('<%= chkListMenuAccess.ClientID %>');
+                            var chkListinputs = chkListModules.getElementsByTagName("input");
+                            for (var i = 0; i < chkListinputs.length; i++) {
+                                if (chkListinputs[i].checked) {
+                                    args.IsValid = true;
+                                    return;
+                                }
+                            }
+                            args.IsValid = false;
+                        }
+                    </script>
+
+                </div>--%>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnSaveAddUserAcces" runat="server" CssClass="btn btn-primary pull-right"
+                Text="Tambah" ValidationGroup="AddEditUserAccess" OnClick="btnSaveAddUserAcces_Click" />
+        </div>
+    </asp:Panel>
+    
+    <asp:Panel ID="pnlConfirm" runat="server">
+        <div class="modal-body">
+            <asp:Label ID="lblConfirm" runat="server"></asp:Label>
+            <asp:HiddenField ID="hfConfirmArgument" runat="server"></asp:HiddenField>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnYesConfirm" runat="server" CssClass="btn btn-warning" Text="Ya"
+                OnClick="btnYesConfirm_Click" />
+            <asp:Button ID="btnNoConfirm" runat="server" CssClass="btn btn-primary" Text="Tidak"
+                OnClick="btnNoConfirm_Click" />
+        </div>
+    </asp:Panel>
+</asp:Content>

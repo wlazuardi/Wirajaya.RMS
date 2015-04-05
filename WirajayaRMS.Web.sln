@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WirajayaRMS.Web", "WirajayaRMS.Web\WirajayaRMS.Web.csproj", "{D31AE814-3114-4420-82EE-E512357D2E1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WirajayaRMS.CrossCutting.OptManagement", "WirajayaRMS.CrossCutting.OptManagement\WirajayaRMS.CrossCutting.OptManagement.csproj", "{47E5FB2E-BAF4-4C57-8710-46130734CB64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WirajayaRMS.DataAccess.Components", "WirajayaRMS.DataAccess.Components\WirajayaRMS.DataAccess.Components.csproj", "{8C5F844E-5735-499F-A917-CC18FA2081CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WirajayaRMS.Business.Entities", "WirajayaRMS.Business.Entities\WirajayaRMS.Business.Entities.csproj", "{18F47B50-D997-47E8-A448-029C4426007C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WirajayaRMS.Business.ApplicationFacade", "WirajayaRMS.Business.ApplicationFacade\WirajayaRMS.Business.ApplicationFacade.csproj", "{1A0F78A7-B037-43A5-B0DF-B97A0FF7AEEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WirajayaRMS.CrossCutting.Security", "WirajayaRMS.CrossCutting.Security\WirajayaRMS.CrossCutting.Security.csproj", "{AF2848AB-9AB1-4ED6-AAC7-BA55CA99FC83}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D31AE814-3114-4420-82EE-E512357D2E1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D31AE814-3114-4420-82EE-E512357D2E1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D31AE814-3114-4420-82EE-E512357D2E1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D31AE814-3114-4420-82EE-E512357D2E1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47E5FB2E-BAF4-4C57-8710-46130734CB64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47E5FB2E-BAF4-4C57-8710-46130734CB64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47E5FB2E-BAF4-4C57-8710-46130734CB64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47E5FB2E-BAF4-4C57-8710-46130734CB64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C5F844E-5735-499F-A917-CC18FA2081CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C5F844E-5735-499F-A917-CC18FA2081CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C5F844E-5735-499F-A917-CC18FA2081CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C5F844E-5735-499F-A917-CC18FA2081CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18F47B50-D997-47E8-A448-029C4426007C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18F47B50-D997-47E8-A448-029C4426007C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18F47B50-D997-47E8-A448-029C4426007C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18F47B50-D997-47E8-A448-029C4426007C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A0F78A7-B037-43A5-B0DF-B97A0FF7AEEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A0F78A7-B037-43A5-B0DF-B97A0FF7AEEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A0F78A7-B037-43A5-B0DF-B97A0FF7AEEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A0F78A7-B037-43A5-B0DF-B97A0FF7AEEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF2848AB-9AB1-4ED6-AAC7-BA55CA99FC83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF2848AB-9AB1-4ED6-AAC7-BA55CA99FC83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF2848AB-9AB1-4ED6-AAC7-BA55CA99FC83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF2848AB-9AB1-4ED6-AAC7-BA55CA99FC83}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

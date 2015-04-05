@@ -1,0 +1,289 @@
+﻿<%@ Page Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="StrukturOrganisasi.aspx.cs" Inherits="WirajayaRMS.Web.Pendataan.StrukturOrganisasi" Title="Struktur Organisasi" %>
+<%@ MasterType VirtualPath="~/Site.Master" %>
+<%@ Register Assembly="ASTreeView" Namespace="Geekees.Common.Controls" TagPrefix="gcc" %>
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="act" %>
+<%@ Register Src="../UserControl/PopUpControl.ascx" TagName="PopUpControl" TagPrefix="uc" %>
+<%@ Register src="../UserControl/AlertControl.ascx" tagname="AlertControl" tagprefix="uc" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+    <script type="text/javascript" src="<%# Request.ApplicationPath.TrimEnd('/')%>/js/plugins/astreeview/astreeview_packed.js"></script>
+
+    <link rel="Stylesheet" href="<%# Request.ApplicationPath.TrimEnd('/')%>/css/astreeview/astreeview.css" />
+
+    <script type="text/javascript" src="<%# Request.ApplicationPath.TrimEnd('/')%>/js/plugins/contextmenu/contextmenu_packed.js"></script>
+
+    <link rel="Stylesheet" href="<%# Request.ApplicationPath.TrimEnd('/')%>/css/contextmenu/contextmenu.css" />
+    
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">    
+    <uc:PopUpControl ID="popUpAddEditSO" runat="server" HeaderText="Tambah Jabatan"
+        BehaviorID="popUpAddEditSO" PopupControlID="pnlAddEditSO" />
+        
+    <uc:PopUpControl ID="popUpConfirm" runat="server" HeaderText="Konfirmasi" 
+        BehaviorID="popUpConfirm" PopupControlID="pnlConfirm" Type="Warning"/>
+        
+    <asp:UpdatePanel ID="up1" runat="server">
+    <ContentTemplate>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-info">
+                    <div class="box-header">
+                        <h3 class="box-title">Daftar Struktur Organisasi</h3>       
+                        <div class="box-tools pull-right">
+                            <asp:DropDownList ID="ddlDivisi" runat="server" CssClass="btn btn-sm btn-default pull-right" AutoPostBack="true" OnSelectedIndexChanged="ddlDivisi_SelectedIndexChanged">                                
+                            </asp:DropDownList>  
+                        </div>                 
+                    </div>
+                    <div class="box-body">   
+                        <div class="alert alert-info">
+                            <i class="fa fa-info"></i>Anda dapat menambahkan, mengubah, dan menghapus struktur organisasi dengan mengklik kanan pada susunan jabatan
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2 pull-right">
+                            </div>
+                            <div class="col-sm-10">
+                                <gcc:ASTreeView ID="tvStrukturOrganisasi" runat="server" 
+                                    EnableCheckbox="false" EnableNodeIcon="false"
+                                    EnableContextMenuAdd="false" EnableContextMenuEdit="false" 
+                                    EnableContextMenuDelete="false" OnNodeSelectedScript="nodeSelectHandler(elem);"
+                                    EnableDragDrop="false"
+                                    BasePath="~/css/astreeview/" />
+                            </div>
+                        </div>
+                        
+                        <uc:AlertControl ID="alertNotification" runat="server" Visible="false" Dismissable="true"/>
+                        
+                        <%--Hidden field untuk keperluan Add, Edit, Delete--%>
+                        <asp:HiddenField ID="hidParentKdSO" runat="server"></asp:HiddenField>
+                        <asp:HiddenField ID="hidKdSO" runat="server"></asp:HiddenField>
+                        <asp:HiddenField ID="hidNamaSO" runat="server"></asp:HiddenField>
+                    </div>
+                    <div class="box-footer">
+                        <div class="row">
+                            <div class="pull-right" style="width:230px">
+                                <asp:Button ID="btnAddSOBottom" runat="server" Text="Tambah" CssClass="btn btn-primary" disabled="disabled" OnClientClick="return AddSO();"/>
+                                <asp:Button ID="btnEditSOBottom" runat="server" Text="Ubah" CssClass="btn btn-primary" disabled="disabled" OnClientClick="return EditSO();"/>
+                                <asp:Button ID="btnDeleteSOBottom" runat="server" Text="Hapus" CssClass="btn btn-danger" disabled="disabled" OnClientClick="return DeleteSO();"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ContentTemplate>
+    </asp:UpdatePanel>
+    
+    <%--Pop up untuk add/edit--%>
+    <asp:Panel ID="pnlAddEditSO" runat="server">
+        <div class="modal-body">
+            <div class="form">
+                <div class="form-group">
+                    <label class="control-label">
+                        Parent</label>
+                    <asp:TextBox ID="txtParentNmSO" runat="server" Enabled="false" CssClass="form-control"></asp:TextBox>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Nama Struktur Organisasi</label>
+                    <asp:TextBox ID="txtNamaSO" runat="server" CssClass="form-control"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="reqNamaSO" runat="server" ControlToValidate="txtNamaSO"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditSO"></asp:RequiredFieldValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Unit</label>
+                    <asp:DropDownList ID="ddlUnit" runat="server" CssClass="form-control"></asp:DropDownList>
+                    <asp:RequiredFieldValidator ID="reqUnit" runat="server" ControlToValidate="ddlUnit" InitialValue="0"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditSO"></asp:RequiredFieldValidator>                    
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Jumlah Karyawan</label>
+                    <div class="input-group">
+                        <asp:TextBox ID="txtJmlKaryawan" runat="server" CssClass="form-control numeric"></asp:TextBox>
+                        <span class="input-group-addon">orang</span>
+                    </div>
+                    <asp:RequiredFieldValidator ID="reqJmlKaryawan" runat="server" ControlToValidate="txtJmlKaryawan"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditSO">
+                    </asp:RequiredFieldValidator>
+                    <asp:RegularExpressionValidator ID="regJmlKaryawan" runat="server" ControlToValidate="txtJmlKaryawan"
+                        ValidationExpression="^[0-9\,]+$" ErrorMessage="Format harus angka" Display="Dynamic" ValidationGroup="AddEditSO">
+                    </asp:RegularExpressionValidator>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">
+                        Jumlah Karyawan Maksimum</label>
+                    <div class="input-group">
+                        <asp:TextBox ID="txtMaxJmlKaryawan" runat="server" CssClass="form-control numeric"></asp:TextBox>
+                        <span class="input-group-addon">orang</span>
+                    </div>
+                    <asp:RequiredFieldValidator ID="reqMaxJmlKaryawan" runat="server" ControlToValidate="txtMaxJmlKaryawan"
+                        ErrorMessage="Field tidak boleh kosong" Display="Dynamic" ValidationGroup="AddEditSO">
+                    </asp:RequiredFieldValidator>
+                    <asp:RegularExpressionValidator ID="regMaxJmlKaryawan" runat="server" ControlToValidate="txtMaxJmlKaryawan"
+                        ValidationExpression="^[0-9\,]+$" ErrorMessage="Format harus angka" Display="Dynamic" ValidationGroup="AddEditSO">
+                    </asp:RegularExpressionValidator>
+                    <asp:CompareValidator ID="cmpJumlahKaryawan" runat="server" ErrorMessage="Jumlah karyawan maksimum harus >= jumlah karyawan" 
+                        Type="Integer" ValidationGroup="AddEditSO" ControlToValidate="txtMaxJmlKaryawan" 
+                        ControlToCompare="txtJmlKaryawan" Operator="GreaterThanEqual">
+                    </asp:CompareValidator>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnAddSO" runat="server" CssClass="btn btn-primary" Text="Tambah"
+                OnClick="btnAddSO_Click" ValidationGroup="AddEditSO" />
+            <asp:Button ID="btnEditSO" runat="server" CssClass="btn btn-primary" Text="Simpan"
+                OnClick="btnEditSO_Click" ValidationGroup="AddEditSO"/>
+        </div>
+    </asp:Panel>
+    
+    <%--Popup untuk konfirmasi delete--%>
+    <asp:Panel ID="pnlConfirm" runat="server">
+        <div class="modal-body">
+            <asp:Label ID="lblConfirm" runat="server"></asp:Label>
+        </div>
+        <div class="modal-footer">
+            <asp:Button ID="btnYesConfirm" runat="server" CssClass="btn btn-warning" Text="Ya"
+                OnClick="btnYesConfirm_Click" />
+            <asp:Button ID="btnNoConfirm" runat="server" CssClass="btn btn-primary" Text="Tidak"
+                OnClick="btnNoConfirm_Click" />
+        </div>
+    </asp:Panel>
+    
+    <asp:PlaceHolder ID="PlaceHolder1" runat="server">
+        <script type="text/javascript">
+            function AddSO() {
+                var kdSOParent = $('#<%=hidKdSO.ClientID%>').val();
+                var nmSOParent = $('#<%=hidNamaSO.ClientID%>').val();
+                
+                $('#<%=pnlAddEditSO.ClientID%>').parent().parent().find('.modal-title').html('Tambah Struktur Organisasi');                
+                $find('popUpAddEditSO').show();
+                if (kdSOParent == 'root') {
+                    $('#<%=hidParentKdSO.ClientID%>').val(0);
+                }
+                else {
+                    $('#<%=hidParentKdSO.ClientID%>').val(kdSOParent);
+                }
+                $('#<%=txtParentNmSO.ClientID%>').val(nmSOParent);
+                $('#<%=txtNamaSO.ClientID%>').val('');
+                $('#<%=btnAddSO.ClientID%>').show();
+                $('#<%=btnEditSO.ClientID%>').hide();
+
+                return false;
+            }
+
+            function EditSO() {
+                var kdSO = $('#<%=hidKdSO.ClientID%>').val();
+
+                if (kdSO == 'root') {
+                    alert('Node ini tidak bisa diubah');
+                    return false;
+                }
+                
+                $('#<%=pnlAddEditSO.ClientID%>').parent().parent().find('.modal-title').html('Ubah Struktur Organisasi');
+                $.ajax({
+                    url: 'StrukturOrganisasi.aspx/GetStrukturOrganisasiData',
+                    type: 'POST',
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify({
+                        kdDivisi: 1,
+                        kdSO: kdSO
+                    }),
+                    success: function(data) {
+                        var result = data.d;
+                        $('#<%=hidParentKdSO.ClientID%>').val(result.ParentKdJabatan);
+                        $('#<%=hidKdSO.ClientID%>').val(result.KdJabatan);
+                        $('#<%=txtNamaSO.ClientID%>').val(result.NmStrukturOrganisasi);
+                        if (result.ParentNmStrukturOrganisasi) {
+                            $('#<%=txtParentNmSO.ClientID%>').val(result.ParentNmStrukturOrganisasi);
+                        }
+                        else {
+                            $('#<%=txtParentNmSO.ClientID%>').val('Root');
+                        }
+                        $('#<%=ddlUnit.ClientID%>').val(result.KdUnit);
+                        $('#<%=txtJmlKaryawan.ClientID%>').val(result.JmlKaryawan);
+                        $('#<%=txtMaxJmlKaryawan.ClientID%>').val(result.MaxJmlKaryawan);
+                        $find('popUpAddEditSO').show();
+                        $('#<%=btnAddSO.ClientID%>').hide();
+                        $('#<%=btnEditSO.ClientID%>').show();
+                    }
+                });
+
+                return false;
+            }
+
+            function DeleteSO() {
+                var kdSO = $('#<%=hidKdSO.ClientID%>').val();
+                var nmSO = $('#<%=hidNamaSO.ClientID%>').val();
+
+                if (kdSO == 'root') {
+                    alert('Node ini tidak bisa diubah');
+                    return false;
+                }
+                
+                $find('popUpConfirm').show();
+                $('#<%=hidKdSO.ClientID%>').val(kdSO);
+                $('#<%=lblConfirm.ClientID%>').html('Anda yakin ingin menghapus struktur organisasi <b>"' + nmSO + '"</b>?<br/>Jabatan akan dihapus beserta seluruh sub-jabatan yang ada di bawahnya');
+                return false;
+            }
+        
+            function onAddContextMenu(clientID) {
+                var kdSOParent = clientID.getSelectedItem().parentNode.getAttribute('treeNodeValue');
+                var nmSOParent = $(clientID.getSelectedItem()).text();
+
+                $('#<%=hidNamaSO.ClientID%>').val(nmSOParent);
+                $('#<%=hidKdSO.ClientID%>').val(kdSOParent);
+                
+                return AddSO();
+            }
+
+            function onEditContextMenu(clientID) {
+                var kdSO = clientID.getSelectedItem().parentNode.getAttribute('treeNodeValue');
+                if (kdSO == 'root') {
+                    alert('Node ini tidak bisa diubah');
+                    return false;
+                }
+                
+                $('#<%=hidKdSO.ClientID%>').val(kdSO);
+                return EditSO();
+            }
+
+            function onDeleteContextMenu(clientID) {
+                var kdSO = clientID.getSelectedItem().parentNode.getAttribute('treeNodeValue');
+                var nmSO = $(clientID.getSelectedItem()).text();
+                if (kdSO == 'root') {
+                    alert('Node ini tidak bisa dihapus');
+                    return false;
+                }
+                
+                $('#<%=hidNamaSO.ClientID%>').val(nmSO);
+                $('#<%=hidKdSO.ClientID%>').val(kdSO);
+                
+                return DeleteSO();
+            }
+
+            function nodeSelectHandler(elem) {
+                var kdSO = elem.parentNode.getAttribute("treeNodeValue");
+                var nmSO = $(elem).text();
+                $('#<%=hidNamaSO.ClientID%>').val(nmSO);
+                $('#<%=hidKdSO.ClientID%>').val(kdSO);
+                $('#<%=btnAddSOBottom.ClientID%>').removeAttr('disabled');
+                $('#<%=btnEditSOBottom.ClientID%>').removeAttr('disabled');
+                $('#<%=btnDeleteSOBottom.ClientID%>').removeAttr('disabled');
+            }
+            
+            function pageLoad() {
+                $('input.numeric').keypress(function(evt) {
+                    var charCode = (evt.which) ? evt.which : event.keyCode;
+                    if (charCode > 31 && (charCode < 48 || charCode > 57))
+                        return false;
+                    return true;
+                });
+            }
+            pageLoad();
+            Sys.Application.add_load(pageLoad);
+        </script>
+
+    </asp:PlaceHolder>
+</asp:Content>
